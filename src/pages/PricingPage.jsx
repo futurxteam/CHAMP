@@ -65,8 +65,8 @@ export default function PricingPage() {
     <div className="min-h-screen pt-20 pb-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <PageHeader
-          title="Choose Your Plan"
-          subtitle="Unlock premium healthcare insights, events, and networking"
+          title="Membership Plans"
+          subtitle="Unlock premium healthcare insights, accredited events, and elite networking"
         />
 
         {/* Success Toast */}

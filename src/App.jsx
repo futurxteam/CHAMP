@@ -105,15 +105,17 @@ export default function App() {
         <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
         <Route path="/signup" element={<AuthRoute><SignupPage /></AuthRoute>} />
 
-        {/* Protected pages - with navbar/footer */}
-        <Route path="/" element={<ProtectedRoute><AppLayout><HomePage /></AppLayout></ProtectedRoute>} />
-        <Route path="/events" element={<ProtectedRoute><AppLayout><EventsPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/events/:id" element={<ProtectedRoute><AppLayout><EventDetailPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/blogs" element={<ProtectedRoute><AppLayout><BlogsPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/blogs/:id" element={<ProtectedRoute><AppLayout><BlogDetailPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/news" element={<ProtectedRoute><AppLayout><NewsPage /></AppLayout></ProtectedRoute>} />
+        {/* Public pages - with navbar/footer */}
+        <Route path="/" element={<AppLayout><HomePage /></AppLayout>} />
+        <Route path="/events" element={<AppLayout><EventsPage /></AppLayout>} />
+        <Route path="/events/:id" element={<AppLayout><EventDetailPage /></AppLayout>} />
+        <Route path="/blogs" element={<AppLayout><BlogsPage /></AppLayout>} />
+        <Route path="/blogs/:id" element={<AppLayout><BlogDetailPage /></AppLayout>} />
+        <Route path="/news" element={<AppLayout><NewsPage /></AppLayout>} />
+        <Route path="/pricing" element={<AppLayout><PricingPage /></AppLayout>} />
+
+        {/* Protected pages */}
         <Route path="/profile" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
-        <Route path="/pricing" element={<ProtectedRoute><AppLayout><PricingPage /></AppLayout></ProtectedRoute>} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -41,12 +41,13 @@ export default function HomePage() {
                 transition={{ delay: 0.2 }}
                 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2 leading-tight"
               >
-                Welcome back, {user?.name?.split(" ")[0]} 👋
+                {user ? `Welcome back, ${user.name.split(" ")[0]} 👋` : "Welcome to CHAMP 🏥"}
               </motion.h1>
               <p className="text-primary-100/90 text-sm sm:text-base md:text-lg max-w-lg leading-relaxed">
-                Stay updated with the latest in healthcare innovation. You have{" "}
-                <span className="text-accent-300 font-bold">3 new notifications</span> and{" "}
-                <span className="text-accent-300 font-bold">2 upcoming events</span>.
+                {user 
+                  ? <>Stay updated with the latest in healthcare innovation. You have <span className="text-accent-300 font-bold">3 new notifications</span> and <span className="text-accent-300 font-bold">2 upcoming events</span>.</>
+                  : "Join the premier community for healthcare professionals to connect, learn, and transform the future of medicine together."
+                }
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">

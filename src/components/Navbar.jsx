@@ -29,7 +29,7 @@ export default function Navbar() {
     { to: "/events", label: "Events", icon: "📅" },
     { to: "/blogs", label: "Community", icon: "📝" },
     { to: "/news", label: "News", icon: "📰" },
-    { to: "/pricing", label: "Pricing", icon: "💎" },
+    { to: "/pricing", label: "Membership", icon: "💎" },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -56,23 +56,21 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            {isAuthenticated && (
-              <div className="hidden md:flex items-center gap-1">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                      isActive(link.to)
-                        ? "text-primary-700 bg-primary-50"
-                        : "text-surface-600 hover:text-primary-600 hover:bg-surface-100"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            )}
+            <div className="hidden md:flex items-center gap-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    isActive(link.to)
+                      ? "text-primary-700 bg-primary-50"
+                      : "text-surface-600 hover:text-primary-600 hover:bg-surface-100"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
 
             {/* Right Section */}
             <div className="flex items-center gap-2">
@@ -96,34 +94,34 @@ export default function Navbar() {
                     onClick={() => { setShowProfile(!showProfile); setShowNotif(false); }}
                     className="p-1 rounded-full hover:ring-2 hover:ring-primary-100 transition-all"
                   >
-                    <img src={user?.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
-                  </button>
-
-                  {/* Mobile Toggle */}
-                  <button
-                    onClick={() => setMobileOpen(!mobileOpen)}
-                    className="md:hidden p-2 rounded-lg text-surface-600 hover:bg-surface-100"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {mobileOpen ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      ) : (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                      )}
-                    </svg>
+                    <img src={user?.avatar} alt="" className="w-8 h-8 rounded-full object-cover shadow-sm" />
                   </button>
                 </>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Link to="/login" className="px-4 py-2 text-sm font-medium text-surface-600 hover:text-primary-600">Sign In</Link>
-                  <Link to="/signup" className="px-4 py-2 text-sm font-bold text-white bg-primary-600 rounded-lg shadow-md shadow-primary-500/20">Join</Link>
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Link to="/login" className="px-3 py-1.5 text-xs sm:text-sm font-medium text-surface-600 hover:text-primary-600">Sign In</Link>
+                  <Link to="/signup" className="px-3 py-1.5 text-xs sm:text-sm font-bold text-white bg-primary-600 rounded-lg shadow-md hover:shadow-primary-500/30 transition-all">Join</Link>
                 </div>
               )}
+
+              {/* Mobile Toggle */}
+              <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="md:hidden p-2 rounded-lg text-surface-600 hover:bg-surface-100"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {mobileOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Dropdowns (Inside nav context) */}
+        {/* Dropdowns */}
         <AnimatePresence>
           {showNotif && (
             <motion.div
@@ -157,7 +155,7 @@ export default function Navbar() {
               </div>
               <div className="p-2">
                 <Link to="/profile" className="block w-full text-left px-3 py-2 text-sm font-semibold text-surface-600 hover:bg-surface-50 rounded-lg">👤 My Profile</Link>
-                <Link to="/pricing" className="block w-full text-left px-3 py-2 text-sm font-semibold text-surface-600 hover:bg-surface-50 rounded-lg">💎 Subscription</Link>
+                <Link to="/pricing" className="block w-full text-left px-3 py-2 text-sm font-semibold text-surface-600 hover:bg-surface-50 rounded-lg">💎 Membership</Link>
                 <button
                   onClick={() => { logout(); navigate("/login"); }}
                   className="block w-full text-left px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg"
@@ -170,7 +168,7 @@ export default function Navbar() {
         </AnimatePresence>
       </nav>
 
-      {/* Mobile Menu Drawer (High z-index to stay on top) */}
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -198,13 +196,20 @@ export default function Navbar() {
               </div>
               
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                <div className="p-4 bg-primary-50 rounded-2xl flex items-center gap-4">
-                  <img src={user?.avatar} className="w-12 h-12 rounded-xl object-cover ring-2 ring-white" alt="" />
-                  <div>
-                    <p className="font-bold text-surface-900 leading-tight">{user?.name}</p>
-                    <p className="text-[10px] text-primary-600 font-bold uppercase tracking-wider">{user?.role}</p>
+                {isAuthenticated ? (
+                  <div className="p-4 bg-primary-50 rounded-2xl flex items-center gap-4">
+                    <img src={user?.avatar} className="w-12 h-12 rounded-xl object-cover ring-2 ring-white" alt="" />
+                    <div>
+                      <p className="font-bold text-surface-900 leading-tight">{user?.name}</p>
+                      <p className="text-[10px] text-primary-600 font-bold uppercase tracking-wider">{user?.role}</p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="p-4 bg-surface-50 rounded-2xl">
+                    <p className="font-bold text-surface-900">Guest Visitor</p>
+                    <Link to="/login" className="text-xs text-primary-600 font-bold hover:underline">Sign in to save progress</Link>
+                  </div>
+                )}
 
                 <div className="space-y-1">
                   {navLinks.map((link) => (
@@ -223,21 +228,23 @@ export default function Navbar() {
                   ))}
                 </div>
 
-                <div className="pt-6 border-t border-surface-50 space-y-1">
-                  <Link to="/profile" className="flex items-center gap-4 px-4 py-3 text-sm font-bold text-surface-600 hover:bg-surface-50 rounded-xl">
-                    <span>👤</span>
-                    My Profile
-                  </Link>
-                  <button onClick={() => { logout(); navigate("/login"); }} className="flex items-center gap-4 w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl">
-                    <span>🚪</span>
-                    Sign Out
-                  </button>
-                </div>
+                {isAuthenticated && (
+                  <div className="pt-6 border-t border-surface-50 space-y-1">
+                    <Link to="/profile" className="flex items-center gap-4 px-4 py-3 text-sm font-bold text-surface-600 hover:bg-surface-50 rounded-xl">
+                      <span>👤</span>
+                      My Profile
+                    </Link>
+                    <button onClick={() => { logout(); navigate("/login"); }} className="flex items-center gap-4 w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl">
+                      <span>🚪</span>
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
               
               <div className="p-6 border-t border-surface-50">
                 <Link to="/pricing" className="block w-full py-4 text-center text-sm font-black text-white bg-primary-600 rounded-2xl shadow-lg shadow-primary-500/20">
-                  Upgrade to Premium
+                  {user?.isPremium ? "Manage Membership" : "Join Membership"}
                 </Link>
               </div>
             </motion.div>
