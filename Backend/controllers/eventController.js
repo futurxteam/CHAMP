@@ -1,28 +1,20 @@
 import Event from "../models/Event.js";
 
-// @desc    Get all events
+// @desc    Get all published events (active only)
 // @route   GET /api/events
-const getEvents = async (req, res) => {
+export const getEvents = async (req, res) => {
   try {
-    const events = await Event.find();
-    
-    // Pattern similar to Blogs
-    const result = events.map((event) => {
-      if (req.user) {
-        return event;
-      }
-      return {
-        _id: event._id,
-        title: event.title,
-        date: event.date,
-        description: event.description,
-        location: event.location,
-        isPremium: event.isPremium,
-        // Hide fullDetails
-      };
-    });
+    const today = new Date();
+    // Filter: published, registration deadline not passed, and max occupants not reached
+    const events = await Event.find({
+      status: "published",
+      registrationTimeline: { $gte: today }
+    }).sort({ date: 1 });
 
-    res.json(result);
+    // Secondary filter for max occupants
+    const activeEvents = events.filter(e => e.registrations.length < e.maxOccupants);
+
+    res.json(activeEvents);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -30,41 +22,110 @@ const getEvents = async (req, res) => {
 
 // @desc    Get event by ID
 // @route   GET /api/events/:id
-const getEventById = async (req, res) => {
+export const getEventById = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id).populate("registrations", "name email");
+    if (!event) return res.status(404).json({ message: "Event not found" });
+    res.json(event);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Register for an event
+// @route   POST /api/events/:id/register
+export const registerForEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
 
-    if (event) {
-      if (req.user) {
-        return res.json(event);
-      }
-      return res.json({
-        _id: event._id,
-        title: event.title,
-        date: event.date,
-        description: event.description,
-        location: event.location,
-        isPremium: event.isPremium,
-        message: "Login to view full event details",
-      });
-    } else {
-      res.status(404).json({ message: "Event not found" });
+    if (new Date() > new Date(event.registrationTimeline)) {
+      return res.status(400).json({ message: "Registration deadline has passed" });
     }
+
+    if (event.registrations.length >= event.maxOccupants) {
+      return res.status(400).json({ message: "Event is at maximum capacity" });
+    }
+
+    const userId = req.user._id;
+    if (event.registrations.includes(userId)) {
+      return res.status(400).json({ message: "You are already registered for this event" });
+    }
+
+    event.registrations.push(userId);
+    await event.save();
+
+    res.json({ message: "Successfully registered for event", registrations: event.registrations.length });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Create Event
-const createEvent = async (req, res) => {
-  const { title, date, description, fullDetails, location, isPremium } = req.body;
+// @desc    Create event (Admin only)
+// @route   POST /api/events
+export const createEvent = async (req, res) => {
   try {
-    const event = new Event({ title, date, description, fullDetails, location, isPremium });
-    const createdEvent = await event.save();
-    res.status(201).json(createdEvent);
+    const { title, date, time, description, location, thumbnail, maxOccupants, registrationTimeline } = req.body;
+
+    const event = await Event.create({
+      title,
+      date,
+      time,
+      description,
+      location,
+      thumbnail,
+      maxOccupants,
+      registrationTimeline,
+      createdBy: req.user._id,
+      status: "published" 
+    });
+
+    res.status(201).json(event);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export { getEvents, getEventById, createEvent };
+// @desc    Update event (Admin only)
+// @route   PUT /api/events/:id
+export const updateEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    const updatedEvent = await Event.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+
+    res.json(updatedEvent);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete event (Admin only)
+// @route   DELETE /api/events/:id
+export const deleteEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    await event.deleteOne();
+    res.json({ message: "Event removed" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get all events for management (Admin only)
+// @route   GET /api/events/admin/all
+export const getAdminEvents = async (req, res) => {
+  try {
+    const events = await Event.find({}).sort({ date: -1 });
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -9,7 +9,10 @@ import blogRoutes from "./routes/blogRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import newsRoutes from "./routes/newsRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-
+import adminRoutes from "./routes/adminRoutes.js";
+import contentRoutes from "./routes/contentRoutes.js";
+import threadRoutes from "./routes/threadRoutes.js";
+import commentRoutes from "./routes/commentRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -29,7 +32,10 @@ app.use("/api/blogs", blogRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/users", userRoutes);
-
+app.use("/api/admin", adminRoutes);
+app.use("/api/content", contentRoutes);
+app.use("/api/thread", threadRoutes);
+app.use("/api/comment", commentRoutes);
 // Database connection
 const PORT = process.env.PORT || 5000;
 

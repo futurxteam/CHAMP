@@ -46,5 +46,15 @@ const optionalAuth = async (req, res, next) => {
   }
   next();
 };
-
+export const adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Admin access only" });
+  }
+};
+export const speakerOnly = (req, res, next) => {
+  if (req.user.role === "speaker") return next();
+  res.status(403).json({ message: "Speaker access only" });
+};
 export { protect, optionalAuth };
