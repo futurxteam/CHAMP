@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useStore from "../store/useStore";
+import { authApi } from "../api/api";
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { signup, error: authError } = useStore();
+  const { setAuth } = useStore();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,13 +23,14 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    const success = await signup(name, email, password);
-    setLoading(false);
-    
-    if (success) {
+    try {
+      const data = await authApi.signup(name, email, password);
+      setAuth(data.user, data.token);
       navigate("/");
-    } else {
-      setError(authError || "Registration failed");
+    } catch (err) {
+      setError(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 

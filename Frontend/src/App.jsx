@@ -11,6 +11,43 @@ import BlogDetailPage from "./pages/BlogDetailPage";
 import NewsPage from "./pages/NewsPage";
 import ProfilePage from "./pages/ProfilePage";
 import PricingPage from "./pages/PricingPage";
+import JoinChampPage from "./pages/JoinChampPage";
+import CertificationPage from "./pages/CertificationPage";
+import ContributeSignupPage from "./pages/ContributeSignupPage";
+import AdminDashboard from "./pages/dashboards/admin/AdminDashboard";
+import SpeakerDashboard from "./pages/dashboards/speaker/SpeakerDashboard";
+import UserDashboard from "./pages/dashboards/user/UserDashboard";
+
+import RegisterCertificationPage from "./pages/RegisterCertificationPage";
+import CommunityNarrativePage from "./pages/CommunityNarrativePage";
+import ContributorPage from "./pages/ContributorPage";
+import AboutPage from "./pages/AboutPage";
+import CommunityEcosystemPage from "./pages/CommunityEcosystemPage";
+import CertificationOverviewPage from "./pages/CertificationOverviewPage";
+import EngagementPage from "./pages/EngagementPage";
+import LeadSessionPage from "./pages/LeadSessionPage";
+import CareersPage from "./pages/CareersPage";
+import TalentPoolPage from "./pages/TalentPoolPage";
+import HirePage from "./pages/HirePage";
+import InsightsPage from "./pages/InsightsPage";
+import EventsOverviewPage from "./pages/EventsOverviewPage";
+import MembershipPage from "./pages/MembershipPage";
+import PartnershipsPage from "./pages/PartnershipsPage";
+import ImpactPage from "./pages/ImpactPage";
+import MemberExperiencesPage from "./pages/MemberExperiencesPage";
+import CareerStoriesPage from "./pages/CareerStoriesPage";
+import OrgImpactPage from "./pages/OrgImpactPage";
+import MetricsPage from "./pages/MetricsPage";
+import SupportPage from "./pages/SupportPage";
+import ContactUsPage from "./pages/ContactUsPage";
+import HelpCenterPage from "./pages/HelpCenterPage";
+import EnquiriesPage from "./pages/EnquiriesPage";
+import LegalPage from "./pages/LegalPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsConditionsPage from "./pages/TermsConditionsPage";
+import EthicsPage from "./pages/EthicsPage";
+import RefundPolicyPage from "./pages/RefundPolicyPage";
+import DashboardRedirect from "./pages/dashboards/DashboardRedirect";
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useStore();
@@ -20,7 +57,7 @@ function ProtectedRoute({ children }) {
 
 function AuthRoute({ children }) {
   const { isAuthenticated } = useStore();
-  if (isAuthenticated) return <Navigate to="/" replace />;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
@@ -107,15 +144,62 @@ export default function App() {
 
         {/* Public pages - with navbar/footer */}
         <Route path="/" element={<AppLayout><HomePage /></AppLayout>} />
+        <Route path="/about" element={<AppLayout><AboutPage /></AppLayout>} />
         <Route path="/events" element={<AppLayout><EventsPage /></AppLayout>} />
         <Route path="/events/:id" element={<AppLayout><EventDetailPage /></AppLayout>} />
         <Route path="/blogs" element={<AppLayout><BlogsPage /></AppLayout>} />
         <Route path="/blogs/:id" element={<AppLayout><BlogDetailPage /></AppLayout>} />
         <Route path="/news" element={<AppLayout><NewsPage /></AppLayout>} />
         <Route path="/pricing" element={<AppLayout><PricingPage /></AppLayout>} />
+        <Route path="/certification" element={<AppLayout><CertificationPage /></AppLayout>} />
+        <Route path="/certification-assessment" element={<AppLayout><CertificationOverviewPage /></AppLayout>} />
+        <Route path="/engagement" element={<AppLayout><EngagementPage /></AppLayout>} />
+        <Route path="/lead-session" element={<AppLayout><LeadSessionPage /></AppLayout>} />
+        <Route path="/careers" element={<AppLayout><CareersPage /></AppLayout>} />
+        <Route path="/talent-pool" element={<AppLayout><TalentPoolPage /></AppLayout>} />
+        <Route path="/insights" element={<AppLayout><InsightsPage /></AppLayout>} />
+        <Route path="/events-overview" element={<AppLayout><EventsOverviewPage /></AppLayout>} />
+        <Route path="/membership" element={<AppLayout><MembershipPage /></AppLayout>} />
+        <Route path="/partnerships" element={<AppLayout><PartnershipsPage /></AppLayout>} />
+        <Route path="/hire" element={<AppLayout><HirePage /></AppLayout>} />
 
+        {/* Impact Subpages */}
+        <Route path="/impact" element={<AppLayout><ImpactPage /></AppLayout>} />
+        <Route path="/impact/member-experiences" element={<AppLayout><MemberExperiencesPage /></AppLayout>} />
+        <Route path="/impact/career-stories" element={<AppLayout><CareerStoriesPage /></AppLayout>} />
+        <Route path="/impact/organizational" element={<AppLayout><OrgImpactPage /></AppLayout>} />
+        <Route path="/impact/metrics" element={<AppLayout><MetricsPage /></AppLayout>} />
+
+        {/* Support Subpages */}
+        <Route path="/support" element={<AppLayout><SupportPage /></AppLayout>} />
+        <Route path="/support/contact" element={<AppLayout><ContactUsPage /></AppLayout>} />
+        <Route path="/support/help-center" element={<AppLayout><HelpCenterPage /></AppLayout>} />
+        <Route path="/support/enquiries" element={<AppLayout><EnquiriesPage /></AppLayout>} />
+
+        {/* Legal Subpages */}
+        <Route path="/legal" element={<AppLayout><LegalPage /></AppLayout>} />
+        <Route path="/legal/privacy" element={<AppLayout><PrivacyPolicyPage /></AppLayout>} />
+        <Route path="/legal/terms" element={<AppLayout><TermsConditionsPage /></AppLayout>} />
+        <Route path="/legal/ethics" element={<AppLayout><EthicsPage /></AppLayout>} />
+        <Route path="/legal/refund" element={<AppLayout><RefundPolicyPage /></AppLayout>} />
+
+        <Route path="/contribute-signup" element={<AppLayout><ContributeSignupPage /></AppLayout>} />
+
+        {/* Dashboards */}
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
+        <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/speaker" element={<ProtectedRoute><SpeakerDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/user" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+
+        <Route path="/register-certification" element={<AppLayout><RegisterCertificationPage /></AppLayout>} />
+        <Route path="/join" element={<AppLayout><JoinChampPage /></AppLayout>} />
+        <Route path="/community" element={<AppLayout><CommunityEcosystemPage /></AppLayout>} />
+        <Route path="/join-community" element={<AppLayout><CommunityNarrativePage /></AppLayout>} />
+        <Route path="/contributor" element={<AppLayout><ContributorPage /></AppLayout>} />
+        <Route path="/lead-session" element={<AppLayout><LeadSessionPage /></AppLayout>} />
+        <Route path="/community-ecosystem" element={<AppLayout><CommunityEcosystemPage /></AppLayout>} />
         {/* Protected pages */}
-        <Route path="/profile" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />

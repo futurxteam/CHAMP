@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useStore from "../store/useStore";
+import { authApi } from "../api/api";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, error: authError } = useStore();
+  const { setAuth } = useStore();
   const [email, setEmail] = useState("sarah.mitchell@champ.io");
   const [password, setPassword] = useState("password");
   const [loading, setLoading] = useState(false);
@@ -16,13 +17,19 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const success = await login(email, password);
-    setLoading(false);
-    
-    if (success) {
-      navigate("/");
-    } else {
-      setError(authError || "Invalid credentials");
+    try {
+      const data = await authApi.login(email, password);
+      setAuth(data.user, data.token);
+
+      // Role-based redirection
+      if (data.user.role === "admin") navigate("/dashboard/admin");
+      else if (data.user.role === "speaker") navigate("/dashboard/speaker");
+      else if (data.user.role === "user") navigate("/dashboard/user");
+      else navigate("/");
+    } catch (err) {
+      setError(err.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,6 +101,26 @@ export default function LoginPage() {
 
           <h2 className="text-2xl font-bold text-surface-900 mb-1">Welcome back</h2>
           <p className="text-surface-500 mb-8">Sign in to your account to continue</p>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`p-4 rounded-xl mb-6 flex items-start gap-3 border ${
+                error.toLowerCase().includes("pending admin approval")
+                ? "bg-accent-50 border-accent-200 text-accent-700"
+                : "bg-red-50 border-red-200 text-red-700"
+              }`}
+            >
+              <div className="text-xl">
+                 {error.toLowerCase().includes("pending admin approval") ? "⌛" : "⚠️"}
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest mb-1">System Message</p>
+                <p className="text-sm font-bold leading-tight">{error}</p>
+              </div>
+            </motion.div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>

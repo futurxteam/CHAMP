@@ -1,0 +1,47 @@
+/* community.css */
+
+.community-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.community-hero {
+  position: relative;
+  padding: 12rem 0 10rem;
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.4)), 
+    url('/h-hero2.jpg'); /* Different hero bg */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: white;
+  text-align: center;
+}
+
+.community-section {
+  padding: 8rem 1rem;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+}
+
+.narrative-card {
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 3rem;
+  padding: 4rem;
+  transition: all 0.4s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+}
+
+.narrative-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--color-primary-400);
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.1);
+}
+
+.community-cta-section {
+  padding: 10rem 1rem;
+  background-color: white;
+  background-image: linear-gradient(rgba(79, 70, 229, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 70, 229, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

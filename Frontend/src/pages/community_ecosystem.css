@@ -1,0 +1,77 @@
+/* community_ecosystem.css */
+
+.ecosystem-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.ecosystem-hero {
+  position: relative;
+  padding: 12rem 0 8rem;
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1)),
+    url('/h-hero3.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.ecosystem-section {
+  padding: 8rem 1rem;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 32px 32px;
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.role-card {
+  padding: 3rem;
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 2.5rem;
+  border-top: 8px solid var(--color-surface-900);
+  transition: all 0.4s ease;
+}
+
+.role-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.15);
+}
+
+.role-card.mentor {
+  border-top-color: var(--color-primary-600);
+}
+
+.guideline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 2rem;
+  border: 1px solid var(--color-surface-100);
+}
+
+.story-bubble {
+  padding: 3rem;
+  background: var(--color-surface-50);
+  border-radius: 3rem;
+  position: relative;
+}
+
+.story-bubble::after {
+  content: '"';
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  font-size: 5rem;
+  color: var(--color-surface-200);
+  font-family: serif;
+  line-height: 1;
+}

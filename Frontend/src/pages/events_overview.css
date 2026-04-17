@@ -1,0 +1,76 @@
+/* events_overview.css */
+
+.ev-overview-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.ev-overview-hero {
+  position: relative;
+  padding: 12rem 0 8rem;
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1)),
+    url('/h-hero2.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.ev-overview-section {
+  padding: 8rem 1rem;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 32px 32px;
+}
+
+.event-type-card {
+  padding: 2.5rem;
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 2.5rem;
+  transition: all 0.4s ease;
+  height: 100%;
+}
+
+.event-type-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--color-primary-600);
+  box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.15);
+}
+
+.highlight-box {
+  background: var(--color-surface-900);
+  color: white;
+  padding: 5rem;
+  border-radius: 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.highlight-item {
+  padding-left: 2rem;
+  border-left: 3px solid var(--color-accent-500);
+  margin-bottom: 2rem;
+}
+
+.register-step {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: var(--color-surface-50);
+  border-radius: 2rem;
+  border: 1px solid var(--color-surface-100);
+}
+
+.difference-badge {
+  padding: 1rem 1.5rem;
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 1.25rem;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-primary-700);
+}

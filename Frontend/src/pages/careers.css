@@ -1,0 +1,85 @@
+/* careers.css */
+
+.careers-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.careers-hero {
+  position: relative;
+  padding: 12rem 0 8rem;
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1)),
+    url('/h-hero2.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.careers-section {
+  padding: 8rem 1rem;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 32px 32px;
+}
+
+.opportunity-card {
+  padding: 3rem;
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 2.5rem;
+  transition: all 0.4s ease;
+}
+
+.opportunity-card:hover {
+  transform: scale(1.02);
+  border-color: var(--color-primary-600);
+  box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.1);
+}
+
+.talent-pool-box {
+  background: var(--color-surface-900);
+  color: white;
+  padding: 5rem;
+  border-radius: 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.talent-pool-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle at top right, var(--color-primary-600), transparent 70%);
+  opacity: 0.1;
+}
+
+.employer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.employer-card {
+  padding: 2.5rem;
+  background: var(--color-surface-50);
+  border-radius: 2.5rem;
+  border: 1px solid var(--color-surface-100);
+}
+
+.career-icon-box {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+}

@@ -1,0 +1,73 @@
+/* about.css */
+
+.about-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.about-hero {
+  position: relative;
+  padding: 14rem 0 10rem;
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1)), 
+    url('/h-hero3.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: white;
+  text-align: center;
+}
+
+.about-section {
+  padding: 8rem 1rem;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 40px 40px;
+}
+
+.philosophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.mission-card {
+  padding: 3rem;
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 2.5rem;
+  transition: all 0.4s ease;
+}
+
+.mission-card:hover {
+  transform: translateY(-10px);
+  border-color: var(--color-primary-600);
+  box-shadow: 0 40px 80px -20px rgba(79, 70, 229, 0.1);
+}
+
+.story-accent {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--color-surface-900);
+  border-left: 4px solid var(--color-primary-600);
+  padding-left: 2rem;
+  margin: 3rem 0;
+}
+
+.team-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 3rem;
+}
+
+.team-badge {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-surface-900);
+  color: white;
+  border-radius: 1rem;
+  font-weight: 800;
+  font-size: 0.875rem;
+}

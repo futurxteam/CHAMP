@@ -1,0 +1,69 @@
+/* talent_pool.css */
+
+.talent-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.talent-hero {
+  position: relative;
+  padding: 12rem 0 8rem;
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1)),
+    url('/h-hero1.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.talent-section {
+  padding: 8rem 1rem;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 32px 32px;
+}
+
+.selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2.5rem;
+  margin-top: 4rem;
+}
+
+.selection-card {
+  padding: 3rem;
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 2.5rem;
+  text-align: center;
+  transition: all 0.4s ease;
+}
+
+.selection-card:hover {
+  border-color: var(--color-primary-600);
+  transform: translateY(-5px);
+  box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.1);
+}
+
+.gain-bubble {
+  padding: 2.5rem;
+  background: var(--color-surface-50);
+  border-radius: 2.5rem;
+  border-left: 6px solid var(--color-primary-500);
+}
+
+.expectation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.expectation-item {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 1.5rem;
+  border: 1px solid var(--color-surface-100);
+}

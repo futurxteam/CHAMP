@@ -1,0 +1,107 @@
+/* engagement.css */
+
+.engagement-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.engagement-hero {
+  position: relative;
+  padding: 12rem 0 8rem;
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1)),
+    url('/h-hero2.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.engagement-section {
+  padding: 8rem 1rem;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 32px 32px;
+}
+
+.learning-card {
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 2.5rem;
+  padding: 3.5rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  height: 100%;
+}
+
+.learning-card:hover {
+  transform: translateY(-12px);
+  border-color: var(--color-primary-600);
+  box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.15);
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.activity-card {
+  padding: 2.5rem;
+  background: white;
+  border: 1px solid var(--color-surface-100);
+  border-radius: 2rem;
+  transition: all 0.3s ease;
+}
+
+.activity-card:hover {
+  background: var(--color-surface-900);
+  color: white;
+  border-color: var(--color-surface-900);
+}
+
+.activity-card:hover h4 {
+  color: white;
+}
+
+.activity-card:hover p {
+  color: var(--color-surface-300);
+}
+
+.philosophy-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4rem;
+}
+
+@media (min-width: 768px) {
+  .philosophy-split {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.project-step {
+  padding-left: 2rem;
+  border-left: 2px solid var(--color-surface-100);
+  position: relative;
+}
+
+.project-step::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary-500);
+}
+
+.module-badge {
+  padding: 0.5rem 1rem;
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+  font-weight: 800;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  display: inline-block;
+  margin-bottom: 1rem;
+}

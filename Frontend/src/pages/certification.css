@@ -1,0 +1,95 @@
+/* certification.css */
+
+.cert-hero {
+  position: relative;
+  padding: 12rem 0 10rem;
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.3)), 
+    url('/h-hero2.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: white;
+  text-align: center;
+}
+
+.cert-container {
+  background-color: white;
+}
+
+.cert-section {
+  padding: 8rem 1rem;
+  background-color: white;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 32px 32px;
+}
+
+.level-card {
+  padding: 3.5rem;
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 2.5rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  height: 100%;
+  text-align: center; /* Centering level card content */
+}
+
+.level-card:hover {
+  transform: translateY(-12px);
+  border-color: var(--color-primary-600);
+  box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.15);
+}
+
+.assessment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 2.5rem;
+  background: white;
+  border-radius: 2rem;
+  border: 1px solid var(--color-surface-100);
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+}
+
+.outcome-badge {
+  padding: 1.75rem;
+  background: white; /* Changed to white for dark text */
+  color: var(--color-surface-900);
+  border: 1px solid var(--color-surface-200);
+  border-radius: 1.5rem;
+  font-weight: 800;
+  border-left: 8px solid var(--color-primary-600);
+  box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05);
+}
+
+.cert-cta-section {
+  padding: 10rem 1rem;
+  background-color: white;
+  background-image: linear-gradient(rgba(79, 70, 229, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 70, 229, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.cert-cta-card {
+  background: white;
+  padding: 5rem;
+  border-radius: 4rem;
+  border: 1px solid var(--color-surface-200);
+  box-shadow: 0 50px 100px -20px rgba(15, 23, 42, 0.1);
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+.step-bubble {
+  width: 4rem;
+  height: 4rem;
+  background: var(--color-surface-900);
+  color: white;
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  transform: rotate(-5deg);
+}

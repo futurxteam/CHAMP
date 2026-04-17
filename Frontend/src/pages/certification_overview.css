@@ -1,0 +1,94 @@
+/* certification_overview.css */
+
+.cert-overview-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.cert-overview-hero {
+  position: relative;
+  padding: 12rem 0 8rem;
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1)), 
+    url('/h-hero2.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.cert-overview-section {
+  padding: 8rem 1rem;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 32px 32px;
+}
+
+.limit-card {
+  padding: 2.5rem;
+  background: var(--color-surface-50);
+  border-radius: 2rem;
+  border-left: 6px solid var(--color-surface-200);
+  transition: all 0.3s ease;
+}
+
+.limit-card:hover {
+  border-left-color: var(--color-primary-600);
+  background: white;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.05);
+}
+
+.component-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.component-card {
+  padding: 2.5rem;
+  background: white;
+  border: 1px solid var(--color-surface-100);
+  border-radius: 2.5rem;
+  transition: all 0.4s ease;
+}
+
+.component-card:hover {
+  border-color: var(--color-primary-400);
+  transform: translateY(-5px);
+}
+
+.benefit-badge {
+  padding: 1.5rem 2rem;
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 1.5rem;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 10px 30px -15px rgba(15, 23, 42, 0.1);
+}
+
+.step-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 2rem;
+  border: 1px solid var(--color-surface-100);
+}
+
+.verify-box {
+  background: var(--color-surface-900);
+  color: white;
+  padding: 4rem;
+  border-radius: 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}

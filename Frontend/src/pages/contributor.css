@@ -1,0 +1,75 @@
+/* contributor.css */
+
+.contributor-container {
+  min-height: 100vh;
+  padding-top: 64px;
+  /* Navbar height */
+  background-color: white;
+}
+
+.contributor-hero {
+  position: relative;
+  padding: 8rem 0;
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.4)),
+    url('/h-hero3.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.contributor-section {
+  padding: 8rem 1rem;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 32px 32px;
+}
+
+.contributor-card {
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 2.5rem;
+  padding: 3rem;
+  transition: all 0.4s ease;
+  height: 100%;
+}
+
+.contributor-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--color-primary-400);
+  box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.1);
+}
+
+.accent-border-box {
+  border-left: 6px solid var(--color-primary-600);
+  padding: 2rem;
+  background-color: var(--color-surface-50);
+  border-radius: 0 2rem 2rem 0;
+}
+
+.step-label {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+  font-weight: 900;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.5rem;
+}
+
+.growth-visual {
+  height: 300px;
+  background-color: var(--color-surface-900);
+  border-radius: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}

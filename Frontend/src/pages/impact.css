@@ -1,0 +1,18 @@
+/* impact.css */
+
+.impact-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.impact-hero {
+  position: relative;
+  padding: 12rem 0 8rem;
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1)),
+    url('/h-hero1.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}

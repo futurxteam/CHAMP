@@ -1,0 +1,79 @@
+/* join.css */
+
+.join-hero {
+  position: relative;
+  padding: 12rem 0 10rem;
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.3)), 
+    url('/h-hero1.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: white;
+  text-align: center;
+}
+
+.join-container {
+  min-height: 100vh;
+  background-color: white;
+}
+
+.join-section {
+  padding: 8rem 1rem;
+  background-color: white;
+  background-image: radial-gradient(var(--color-surface-100) 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+}
+
+.join-card {
+  background: white;
+  border: 1px solid var(--color-surface-200);
+  border-radius: 2.5rem;
+  padding: 3rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.join-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 40px 60px -15px rgba(15, 23, 42, 0.1);
+  border-color: var(--color-primary-600);
+}
+
+.join-accent-box {
+  background: white;
+  padding: 4rem;
+  border-radius: 4rem;
+  color: var(--color-surface-900);
+  border: 1px solid var(--color-surface-200);
+  box-shadow: 0 20px 50px -10px rgba(0,0,0,0.05);
+}
+
+.join-step-icon {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+.join-btn-large {
+  display: inline-block;
+  padding: 1.5rem 4rem;
+  background-color: var(--color-primary-600);
+  color: white;
+  font-weight: 900;
+  font-size: 1.25rem;
+  border-radius: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.3);
+}
+
+.join-btn-large:hover {
+  background-color: var(--color-primary-500);
+  transform: translateY(-4px);
+  box-shadow: 0 30px 60px rgba(79, 70, 229, 0.4);
+}
+
+.join-cta-section {
+  padding: 10rem 1rem;
+  background-color: white;
+  background-image: linear-gradient(rgba(79, 70, 229, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 70, 229, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

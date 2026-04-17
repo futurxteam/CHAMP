@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-const API_URL = "http://localhost:5000/api";
-
 const useStore = create(
   persist(
     (set, get) => ({
@@ -14,61 +12,18 @@ const useStore = create(
       loading: false,
 
       // Authentication actions
-      login: async (email, password) => {
-        set({ loading: true, error: null });
-        try {
-          const response = await fetch(`${API_URL}/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.message || "Login failed");
-          }
-
-          set({
-            isAuthenticated: true,
-            user: data.user,
-            token: data.token,
-            loading: false,
-          });
-          return true;
-        } catch (error) {
-          set({ error: error.message, loading: false });
-          return false;
-        }
+      setAuth: (user, token) => {
+        set({
+          isAuthenticated: true,
+          user,
+          token,
+          loading: false,
+          error: null,
+        });
       },
 
-      signup: async (name, email, password) => {
-        set({ loading: true, error: null });
-        try {
-          const response = await fetch(`${API_URL}/auth/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, email, password }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.message || "Registration failed");
-          }
-
-          set({
-            isAuthenticated: true,
-            user: data.user,
-            token: data.token,
-            loading: false,
-          });
-          return true;
-        } catch (error) {
-          set({ error: error.message, loading: false });
-          return false;
-        }
-      },
+      setLoading: (loading) => set({ loading }),
+      setError: (error) => set({ error }),
 
       logout: () => {
         set({
