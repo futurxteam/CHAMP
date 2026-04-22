@@ -24,7 +24,8 @@ const ContentSchema = new mongoose.Schema(
 
     tags: [String],
 
-    speaker: {
+    // renamed from "speaker" → "user" to reflect new role system
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,

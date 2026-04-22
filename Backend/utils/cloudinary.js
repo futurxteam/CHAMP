@@ -15,14 +15,15 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
     const isVideo = file.mimetype.startsWith("video");
+    const isPdf = file.mimetype === "application/pdf";
     return {
-      folder: "CHAMP_Content",
-      resource_type: isVideo ? "video" : "image",
-      format: isVideo ? "mp4" : "png", 
+      folder: isPdf ? "CHAMP_Proofs" : "CHAMP_Content",
+      resource_type: isVideo ? "video" : (isPdf ? "raw" : "image"),
       public_id: `${Date.now()}-${file.originalname.split(".")[0]}`,
     };
   },
 });
 
 export const upload = multer({ storage: storage });
+export const uploadProof = multer({ storage: storage });
 export default cloudinary;

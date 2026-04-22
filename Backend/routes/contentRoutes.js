@@ -10,25 +10,25 @@ import {
   getSavedContent,
 } from "../controllers/contentController.js";
 
-import { protect, speakerOnly } from "../middleware/authMiddleware.js";
+import { protect, contributorOnly } from "../middleware/authMiddleware.js";
 import { upload } from "../utils/cloudinary.js";
 
 const router = express.Router();
 
-// 🎤 Speaker creates and manages content
-router.post("/create", protect, speakerOnly, upload.fields([
+// L2 / L3 contributors create and manage content
+router.post("/create", protect, contributorOnly, upload.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "video", maxCount: 1 }
 ]), createContent);
 
-router.get("/my-content", protect, speakerOnly, getMyContent);
+router.get("/my-content", protect, contributorOnly, getMyContent);
 
-router.put("/:id", protect, speakerOnly, upload.fields([
+router.put("/:id", protect, contributorOnly, upload.fields([
   { name: "thumbnail", maxCount: 1 },
   { name: "video", maxCount: 1 }
 ]), updateContent);
 
-// 🌍 Public content
+// L1 / authenticated users — view-only
 router.get("/published", protect, getPublishedContent);
 router.get("/saved", protect, getSavedContent);
 router.get("/:id", protect, getContent);

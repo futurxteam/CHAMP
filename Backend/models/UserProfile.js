@@ -49,8 +49,8 @@ const UserProfileSchema = new mongoose.Schema(
       followers: { type: Number, default: 0 },
     },
 
-    // 🔥 Speaker-specific fields
-    speakerDetails: {
+    // 🔥 Contributor-specific fields
+    contributorDetails: {
       topics: [String],
       sessions: { type: Number, default: 0 },
       rating: { type: Number, default: 0 },

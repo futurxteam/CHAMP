@@ -1,9 +1,13 @@
 import express from "express";
-import {registerUser,registerSpeaker,loginUser} from "../controllers/authController.js";
+import { signupUser, loginUser } from "../controllers/authController.js";
+import { uploadProof } from "../utils/cloudinary.js";
 
 const router = express.Router();
 
-router.post("/register", registerUser);
-router.post("/register-speaker", registerSpeaker);
+// Single unified signup endpoint with optional file upload for proof
+router.post("/signup", uploadProof.single("proof"), signupUser);
+
+// Login
 router.post("/login", loginUser);
+
 export default router;

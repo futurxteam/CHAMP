@@ -65,7 +65,8 @@ export const registerForEvent = async (req, res) => {
 // @route   POST /api/events
 export const createEvent = async (req, res) => {
   try {
-    const { title, date, time, description, location, thumbnail, maxOccupants, registrationTimeline } = req.body;
+    const { title, date, time, description, location, maxOccupants, registrationTimeline } = req.body;
+    const thumbnail = req.file ? req.file.path : req.body.thumbnail;
 
     const event = await Event.create({
       title,
@@ -93,9 +94,12 @@ export const updateEvent = async (req, res) => {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
+    const updateData = { ...req.body };
+    if (req.file) updateData.thumbnail = req.file.path;
+
     const updatedEvent = await Event.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      { $set: updateData },
       { new: true }
     );
 

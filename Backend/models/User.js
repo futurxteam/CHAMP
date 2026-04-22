@@ -14,23 +14,36 @@ const UserSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    speakerProfile: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "SpeakerProfile",
-},
     password: {
       type: String,
       required: true,
     },
     role: {
       type: String,
-      enum: ["user", "speaker", "admin"],
-      default: "user",
+      enum: ["L1", "L2", "L3", "admin"],
+      default: "L1",
     },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected", "blocked"],
       default: "approved",
+    },
+    // Contributor fields
+    expertise: {
+      type: [String],
+      default: [],
+    },
+    expertiseLevel: {
+      type: String,
+      enum: ["Beginner", "Intermediate", "Expert"],
+    },
+    isContributor: {
+      type: Boolean,
+      default: false,
+    },
+    proofUrl: {
+      type: String,
+      default: "",
     },
   },
   { timestamps: true }

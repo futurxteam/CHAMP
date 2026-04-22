@@ -41,20 +41,26 @@ const optionalAuth = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select("-password");
     } catch (error) {
-      // If token is invalid, we don't block. We just proceed without a user.
+      // If token is invalid, proceed without a user
     }
   }
   next();
 };
+
+// Admin only
 export const adminOnly = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
-    next();
-  } else {
-    res.status(403).json({ message: "Admin access only" });
+    return next();
   }
+  res.status(403).json({ message: "Admin access only" });
 };
-export const speakerOnly = (req, res, next) => {
-  if (req.user.role === "speaker") return next();
-  res.status(403).json({ message: "Speaker access only" });
+
+// L2 or L3 — contributors who can create / update content
+export const contributorOnly = (req, res, next) => {
+  if (req.user && (req.user.role === "L2" || req.user.role === "L3")) {
+    return next();
+  }
+  res.status(403).json({ message: "Contributor access only (L2 or L3 required)" });
 };
+
 export { protect, optionalAuth };

@@ -1,9 +1,10 @@
 import Content from "../models/Content.js";
 
+// POST /api/content/create (L2 / L3 only)
 export const createContent = async (req, res) => {
   try {
     const { title, description, content, type, tags } = req.body;
-    
+
     // Extract file paths from Cloudinary via Multer
     const thumbnail = req.files?.thumbnail ? req.files.thumbnail[0].path : null;
     const videoUrl = req.files?.video ? req.files.video[0].path : null;
@@ -16,7 +17,7 @@ export const createContent = async (req, res) => {
       content,
       type,
       tags: tags ? JSON.parse(tags) : [],
-      speaker: req.user._id,
+      user: req.user._id,   // was: speaker
       status: "pending",
       likes: [],
       saves: [],
@@ -33,11 +34,10 @@ export const createContent = async (req, res) => {
 };
 
 // GET /api/content/published
-
 export const getPublishedContent = async (req, res) => {
   try {
     const content = await Content.find({ status: "published" })
-      .populate("speaker", "name")
+      .populate("user", "name")
       .sort({ createdAt: -1 });
 
     res.json(content);
@@ -47,10 +47,10 @@ export const getPublishedContent = async (req, res) => {
   }
 };
 
-// GET /api/content/my-content (Speaker's own content)
+// GET /api/content/my-content (contributor's own content)
 export const getMyContent = async (req, res) => {
   try {
-    const content = await Content.find({ speaker: req.user._id })
+    const content = await Content.find({ user: req.user._id })
       .sort({ createdAt: -1 });
 
     res.json(content);
@@ -67,7 +67,7 @@ export const updateContent = async (req, res) => {
     const item = await Content.findById(req.params.id);
 
     if (!item) return res.status(404).json({ message: "Content not found" });
-    if (item.speaker.toString() !== req.user._id.toString()) {
+    if (item.user.toString() !== req.user._id.toString()) {
       return res.status(401).json({ message: "Unauthorized to edit this content" });
     }
 
@@ -136,7 +136,7 @@ export const toggleSaveContent = async (req, res) => {
 // GET /api/content/:id
 export const getContent = async (req, res) => {
   try {
-    const content = await Content.findById(req.params.id).populate("speaker", "name");
+    const content = await Content.findById(req.params.id).populate("user", "name");
     if (!content) return res.status(404).json({ message: "Content not found" });
     res.json(content);
   } catch (error) {
@@ -148,11 +148,11 @@ export const getContent = async (req, res) => {
 export const getSavedContent = async (req, res) => {
   try {
     const userId = req.user._id;
-    const content = await Content.find({ 
+    const content = await Content.find({
       saves: userId,
-      status: "published" 
-    }).populate("speaker", "name");
-    
+      status: "published",
+    }).populate("user", "name");
+
     res.json(content);
   } catch (error) {
     res.status(500).json({ message: error.message });
