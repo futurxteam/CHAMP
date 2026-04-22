@@ -215,7 +215,7 @@ export default function LeadSessionPage() {
            <div className="bg-white p-12 md:p-16 rounded-[4rem] border border-surface-200 shadow-2xl">
               <h2 className="text-3xl font-black text-surface-900 mb-12">Building a more relevant, experience-driven learning ecosystem</h2>
               <div className="flex flex-col md:flex-row justify-center gap-6">
-                <Link to="/contribute-signup" className="btn-primary px-10 py-5 text-center">Submit Your Session Proposal</Link>
+                <Link to="/signup" className="btn-primary px-10 py-5 text-center">Submit Your Session Proposal</Link>
                 <Link to="/contributor" className="btn-outline-dark px-10 py-5 text-center">Become a Contributor</Link>
                 <Link to="/join" className="btn-outline-dark px-10 py-5 text-center">Join CHAMP</Link>
               </div>

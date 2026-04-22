@@ -14,7 +14,7 @@ export default function EventCard({ event, onRegister, isRegistered }) {
       {/* Image */}
       <div className="relative overflow-hidden h-48">
         <img
-          src={event.image}
+          src={event.thumbnail || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800"}
           alt={event.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />

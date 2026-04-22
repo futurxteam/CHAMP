@@ -5,7 +5,7 @@ import useStore from "../../../store/useStore";
 import { contentApi, eventApi } from "../../../api/api";
 import VideoPlayer from "../../../components/VideoPlayer";
 
-export default function SpeakerDashboard() {
+export default function ContributorDashboard() {
   const { user, logout, token } = useStore();
   const [activeTab, setActiveTab ] = useState("teaching");
   const [myContent, setMyContent] = useState([]);
@@ -32,7 +32,7 @@ export default function SpeakerDashboard() {
      try {
         const res = await eventApi.register(id, token);
         alert(res.message);
-        fetchEvents(); // Refresh
+        fetchEvents();
      } catch (err) { alert(err.message); }
   };
 
@@ -61,6 +61,7 @@ export default function SpeakerDashboard() {
         return <p className="text-sm">{contentStr}</p>;
      }
   };
+
   const [formData, setFormData] = useState({
      title: "",
      type: "article",
@@ -150,6 +151,8 @@ export default function SpeakerDashboard() {
      if (activeTab === "events") fetchEvents();
   }, [activeTab]);
 
+  const roleLabel = user?.role === "L3" ? "Senior Contributor (L3)" : "Contributor (L2)";
+
   const menuItems = [
     { id: "profile", label: "My Profile", icon: "👤" },
     { id: "content", label: "Manage Content", icon: "📄" },
@@ -208,11 +211,11 @@ export default function SpeakerDashboard() {
                  {menuItems.find(i => i.id === activeTab)?.label}
               </h1>
               <p className="text-xs text-surface-400 font-bold uppercase tracking-widest mt-1">
-                 Speaker Hub • {user?.name}
+                 Contributor Hub • {user?.name}
               </p>
            </div>
            <div className="flex items-center gap-4">
-              <span className="px-3 py-1 bg-accent-100 text-accent-700 text-[10px] font-black uppercase rounded-full tracking-widest">Verified Expert</span>
+              <span className="px-3 py-1 bg-accent-100 text-accent-700 text-[10px] font-black uppercase rounded-full tracking-widest">{roleLabel}</span>
               <div className="w-12 h-12 rounded-full bg-surface-900 flex items-center justify-center text-white font-black text-xl shadow-xl">
                  {user?.name?.charAt(0)}
               </div>
@@ -223,11 +226,23 @@ export default function SpeakerDashboard() {
            {activeTab === "profile" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  <div className="p-8 bg-white rounded-3xl border border-surface-100 shadow-sm">
-                    <h3 className="text-sm font-black text-surface-400 uppercase tracking-widest mb-6">Expert Profile</h3>
+                    <h3 className="text-sm font-black text-surface-400 uppercase tracking-widest mb-6">Contributor Profile</h3>
                     <div className="space-y-4">
                        <div><label className="text-[10px] font-black uppercase text-surface-300">Name</label><p className="font-bold text-surface-900">{user?.name}</p></div>
                        <div><label className="text-[10px] font-black uppercase text-surface-300">Email</label><p className="font-bold text-surface-900">{user?.email}</p></div>
-                       <div><label className="text-[10px] font-black uppercase text-surface-300">Role</label><p className="font-bold text-accent-600 uppercase text-xs">Professional Speaker / Contributor</p></div>
+                       <div><label className="text-[10px] font-black uppercase text-surface-300">Access Level</label><p className="font-bold text-accent-600 uppercase text-xs">{roleLabel}</p></div>
+                       {user?.expertise?.length > 0 && (
+                         <div>
+                           <label className="text-[10px] font-black uppercase text-surface-300">Expertise</label>
+                           <p className="font-bold text-surface-900">{user.expertise.join(", ")}</p>
+                         </div>
+                       )}
+                       {user?.expertiseLevel && (
+                         <div>
+                           <label className="text-[10px] font-black uppercase text-surface-300">Expertise Level</label>
+                           <p className="font-bold text-surface-900">{user.expertiseLevel}</p>
+                         </div>
+                       )}
                     </div>
                  </div>
               </div>
@@ -292,7 +307,7 @@ export default function SpeakerDashboard() {
                                       onChange={(e) => setFormData({...formData, video: e.target.files[0]})}
                                       className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                    />
-                                   <div className="w-full px-8 py-10 rounded-[2rem] bg-white border-2 border-dashed border-primary-200 flex flex-col items-center justify-center text-center group-hover:border-primary-400 transition-all">
+                                   <div className="w-full px-8 py-10 rounded-[2rem] bg-white border-2 border-dashed border-primary-200 flex flex-col items-center justify-center text-center">
                                       <div className="text-3xl mb-2">📹</div>
                                       <p className="text-xs font-black text-primary-900 uppercase">{formData.video ? formData.video.name : "Drop Video Here or Click to Browse"}</p>
                                       <p className="text-[10px] text-primary-400 font-medium mt-1 uppercase">Max 100MB • MP4 / WebM</p>
@@ -312,7 +327,7 @@ export default function SpeakerDashboard() {
                                 placeholder="Enter Article Title"
                              />
                           </div>
-{/* blocks logic */}
+
                           <div className="space-y-4">
                              <label className="block text-[10px] font-black uppercase text-surface-300">Article Blocks</label>
                              {formData.sections.map((section, idx) => (
@@ -474,7 +489,7 @@ export default function SpeakerDashboard() {
 
            {activeTab === "learning" && (
               <div className="p-12 bg-surface-50 rounded-[3rem] text-center italic text-surface-400 font-bold uppercase text-xs tracking-widest">
-                No active learning programs for expert accounts yet.
+                No active learning programs for contributor accounts yet.
               </div>
            )}
 
@@ -488,7 +503,7 @@ export default function SpeakerDashboard() {
 
            {activeTab === "discussions" && (
               <div className="p-12 text-center italic text-surface-400 font-black uppercase tracking-widest text-[10px]">
-                 Community interaction protocols active. Join specialized expert circles.
+                 Community interaction protocols active. Join specialized contributor circles.
               </div>
            )}
 
@@ -562,7 +577,7 @@ export default function SpeakerDashboard() {
                      <div className="p-20 bg-surface-50 rounded-[4rem] border-2 border-dashed border-surface-200 text-center">
                         <span className="text-6xl mb-6 block">📅</span>
                         <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">No Facilitated Events</h3>
-                        <p className="text-surface-400 font-medium mt-2">There are currently no sessions scheduled for expert facilitation.</p>
+                        <p className="text-surface-400 font-medium mt-2">There are currently no sessions scheduled.</p>
                      </div>
                   )}
                </div>
@@ -586,7 +601,7 @@ export default function SpeakerDashboard() {
                  <div className="bg-white p-12 rounded-[4rem] border border-surface-100 shadow-sm relative overflow-hidden">
                     <div className="relative z-10">
                        <h3 className="text-2xl font-black text-surface-900 uppercase tracking-tighter mb-4">Expert Contributions</h3>
-                       <p className="text-surface-500 font-medium mb-10 max-w-xl">You are currently lead facilitator for "Hospital Operational Dynamics". Continue sharing your unique hospital insights with the community.</p>
+                       <p className="text-surface-500 font-medium mb-10 max-w-xl">Continue sharing your unique insights with the community. As an L2/L3 contributor you can publish articles, videos, and courses.</p>
                        <div className="flex gap-4">
                           <button 
                              onClick={() => { setActiveTab("content"); setShowForm(true); }}

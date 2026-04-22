@@ -122,9 +122,7 @@ export default function UserDashboard() {
       });
    };
 
-  if (user?.role === "speaker") {
-     menuItems.push({ id: "teaching", label: "Contributions & Teaching Activity", icon: "🎓" });
-  }
+  // L1 users only view — no teaching tab needed (that's in ContributorDashboard)
 
   return (
     <div className="dashboard-layout">
@@ -193,7 +191,7 @@ export default function UserDashboard() {
                     <header className="mb-12">
                        <div className="flex gap-4 mb-4">
                           <span className="px-3 py-1 bg-primary-100 text-primary-600 text-[10px] font-black uppercase rounded-full tracking-widest">{viewContent.type}</span>
-                          <span className="px-3 py-1 bg-surface-50 text-surface-400 text-[10px] font-black uppercase rounded-full tracking-widest italic">Authored by {viewContent.speaker?.name}</span>
+                          <span className="px-3 py-1 bg-surface-50 text-surface-400 text-[10px] font-black uppercase rounded-full tracking-widest italic">Authored by {viewContent.user?.name}</span>
                        </div>
                        <h2 className="text-4xl font-black text-surface-900 uppercase tracking-tighter leading-none mb-6">{viewContent.title}</h2>
                     </header>
@@ -275,7 +273,7 @@ export default function UserDashboard() {
                              </div>
                              <div>
                                 <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter line-clamp-2 leading-none group-hover:text-primary-600 transition-colors mb-2">{c.title}</h3>
-                                <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest italic mb-6">Expert: {c.speaker?.name}</p>
+                                <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest italic mb-6">By: {c.user?.name}</p>
                                 
                                 <div className="flex justify-between items-center py-4 border-t border-surface-50">
                                    <div className="flex gap-4">
@@ -321,7 +319,7 @@ export default function UserDashboard() {
                                    </div>
                                    <div>
                                       <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter line-clamp-2 leading-none group-hover:text-primary-600 transition-colors mb-2">{c.title}</h3>
-                                      <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest italic mb-6">Expert: {c.speaker?.name}</p>
+                                      <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest italic mb-6">By: {c.user?.name}</p>
                                       
                                       <div className="flex justify-between items-center py-4 border-t border-surface-50">
                                          <div className="flex gap-4">
@@ -378,7 +376,7 @@ export default function UserDashboard() {
                                 <div className="space-y-6">
                                    <div className="flex flex-col gap-1">
                                       <label className="text-[10px] font-black uppercase text-white/30 tracking-widest">Primary Role</label>
-                                      <p className="text-xl font-black text-white uppercase tracking-tighter">{user?.role === "speaker" ? "Expert Facilitator" : "Healthcare Professional"}</p>
+                                      <p className="text-xl font-black text-white uppercase tracking-tighter">{user?.role === "L1" ? "Healthcare Professional" : user?.role}</p>
                                    </div>
                                    <div className="flex flex-col gap-1">
                                       <label className="text-[10px] font-black uppercase text-white/30 tracking-widest">Experience Index</label>
@@ -500,29 +498,7 @@ export default function UserDashboard() {
                     </div>
                  )}
 
-                 {activeTab === "teaching" && user?.role === "speaker" && (
-                    <div className="space-y-8">
-                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          <div className="p-8 bg-white rounded-3xl border border-surface-100">
-                             <h4 className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-2">Sessions Held</h4>
-                             <p className="text-3xl font-black text-surface-900">0</p>
-                          </div>
-                          <div className="p-8 bg-white rounded-3xl border border-surface-100">
-                             <h4 className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-2">Total Participants</h4>
-                             <p className="text-3xl font-black text-surface-900">0</p>
-                          </div>
-                          <div className="p-8 bg-white rounded-3xl border border-surface-100">
-                             <h4 className="text-[10px] font-black text-surface-300 uppercase tracking-widest mb-2">Expert Rating</h4>
-                             <p className="text-3xl font-black text-primary-600">N/A</p>
-                          </div>
-                       </div>
-                       <div className="p-12 bg-surface-50 rounded-[3rem] border border-surface-100 text-center">
-                          <h3 className="text-xl font-black text-surface-900 uppercase mb-4">Institutional Contribution</h3>
-                          <p className="text-surface-500 font-medium">As a co-creative facilitator, your activity tracks sessions, feedback, and knowledge sharing.</p>
-                          <button className="mt-8 px-8 py-3 border-2 border-surface-900 text-surface-900 rounded-2xl font-black text-[10px] uppercase tracking-widest">Propose New Session</button>
-                       </div>
-                    </div>
-                 )}
+
               </>
            )}
         </div>

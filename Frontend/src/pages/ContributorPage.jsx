@@ -197,7 +197,7 @@ export default function ContributorPage() {
            <div className="bg-white p-12 md:p-16 rounded-[4rem] border border-surface-200 shadow-2xl">
               <p className="text-2xl font-black text-surface-800 mb-12">Become a contributor and build a more relevant, experience-driven healthcare learning ecosystem.</p>
               <div className="flex flex-col md:flex-row justify-center gap-6">
-                <Link to="/contribute-signup" className="btn-primary px-12 py-5 text-xl text-center">Apply to Contribute</Link>
+                <Link to="/signup" className="btn-primary px-12 py-5 text-xl text-center">Apply to Contribute</Link>
                 <Link to="/join" className="btn-outline-dark px-12 py-5 text-xl text-center">Join the Community</Link>
               </div>
            </div>

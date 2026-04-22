@@ -74,7 +74,11 @@ export default function EventDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           className="relative rounded-2xl overflow-hidden h-64 md:h-80 mb-8"
         >
-          <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+          <img 
+            src={event.thumbnail || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200"} 
+            alt={event.title} 
+            className="w-full h-full object-cover" 
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
           <div className="absolute bottom-6 left-6 right-6">
             <div className="flex gap-2 mb-3">

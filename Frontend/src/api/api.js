@@ -24,7 +24,7 @@ const apiHandler = async (endpoint, options = {}) => {
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
 
-    // 🔥 read as text first (SAFE)
+    // read as text first (SAFE)
     const text = await response.text();
 
     let data;
@@ -47,22 +47,28 @@ const apiHandler = async (endpoint, options = {}) => {
 };
 
 export const authApi = {
+  // Unified signup: L1 (no expertise) or L2 contributor (with expertise)
+  signup: (name, email, password, expertise = "", expertiseLevel = "", proofFile = null) => {
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("expertise", expertise);
+    formData.append("expertiseLevel", expertiseLevel);
+    if (proofFile) {
+      formData.append("proof", proofFile);
+    }
+    
+    return apiHandler("/auth/signup", {
+      method: "POST",
+      body: formData,
+    });
+  },
+
   login: (email, password) =>
     apiHandler("/auth/login", {
       method: "POST",
       body: { email, password },
-    }),
-
-  signup: (name, email, password) =>
-    apiHandler("/auth/register", {
-      method: "POST",
-      body: { name, email, password },
-    }),
-
-  signupSpeaker: (speakerData) =>
-    apiHandler("/auth/register-speaker", {
-      method: "POST",
-      body: speakerData,
     }),
 
   getProfile: (token) =>
@@ -72,19 +78,27 @@ export const authApi = {
 };
 
 export const adminApi = {
-  getPendingSpeakers: (token) =>
-    apiHandler("/admin/speakers/pending", {
+  // Contributor management
+  getPendingContributors: (token) =>
+    apiHandler("/admin/contributors/pending", {
       headers: { Authorization: `Bearer ${token}` },
     }),
 
-  approveSpeaker: (id, token) =>
-    apiHandler(`/admin/speakers/${id}/approve`, {
+  approveContributor: (id, token) =>
+    apiHandler(`/admin/contributors/${id}/approve`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     }),
 
-  rejectSpeaker: (id, token) =>
-    apiHandler(`/admin/speakers/${id}/reject`, {
+  rejectContributor: (id, token) =>
+    apiHandler(`/admin/contributors/${id}/reject`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  // Promote L2 → L3
+  promoteContributor: (id, token) =>
+    apiHandler(`/admin/contributors/${id}/promote`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     }),
@@ -96,14 +110,14 @@ export const adminApi = {
     });
   },
 
-  updateUserStatus: (id, status, token) =>
+  updateUserStatus: (id, status, token, role) =>
     apiHandler(`/admin/users/${id}/status`, {
       method: "PUT",
-      body: { status },
+      body: { status, role },
       headers: { Authorization: `Bearer ${token}` },
     }),
 
-  // 🔥 Content Management
+  // Content Management
   getPendingContent: (token) =>
     apiHandler("/admin/content/pending", {
       headers: { Authorization: `Bearer ${token}` },
@@ -121,7 +135,14 @@ export const adminApi = {
       body: { reason },
       headers: { Authorization: `Bearer ${token}` },
     }),
+
+  deleteContent: (id, token) =>
+    apiHandler(`/admin/content/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
 };
+
 export const contentApi = {
   createContent: (contentData, token) =>
     apiHandler("/content/create", {

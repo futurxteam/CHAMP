@@ -3,167 +3,165 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useStore from "../store/useStore";
 import { authApi } from "../api/api";
+import "./contribute_signup.css";
 
 export default function SignupPage() {
   const navigate = useNavigate();
   const { setAuth } = useStore();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState(false);
 
-  const handleSignup = async (e) => {
+  // Form State
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    expertise: "",
+    expertiseLevel: "Intermediate",
+  });
+  const [proofFile, setProofFile] = useState(null);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e) => {
+    setProofFile(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password) {
-      setError("Please fill in all fields");
-      return;
-    }
-    
     setLoading(true);
     setError("");
 
     try {
-      const data = await authApi.signup(name, email, password);
-      setAuth(data.user, data.token);
-      navigate("/");
+      const data = await authApi.signup(
+        formData.name,
+        formData.email,
+        formData.password,
+        formData.expertise,
+        formData.expertiseLevel,
+        proofFile
+      );
+
+      if (data.user.status === "pending") {
+        setPendingApproval(true);
+        setSuccess(true);
+      } else {
+        setAuth(data.user, data.token);
+        navigate("/dashboard/user");
+      }
     } catch (err) {
-      setError(err.message || "Registration failed");
+      setError(err.message || "Registration failed. Please check your data.");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 flex">
-      {/* Left - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-700 via-primary-800 to-primary-950 relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-32 left-16 w-72 h-72 rounded-full bg-accent-500/15 blur-3xl" />
-          <div className="absolute bottom-32 right-16 w-80 h-80 rounded-full bg-primary-300/15 blur-3xl" />
-        </div>
-        <div className="relative z-10 flex flex-col justify-center px-16">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <span className="text-white font-bold text-xl">C</span>
-              </div>
-              <span className="text-3xl font-bold text-white">CHAMP</span>
-            </div>
-            <h1 className="text-4xl font-extrabold text-white leading-tight mb-4">
-              Start Your Journey<br />
-              <span className="text-accent-300">In Healthcare Innovation.</span>
-            </h1>
-            <p className="text-primary-200 text-lg max-w-md leading-relaxed">
-              Create your free account and join thousands of healthcare leaders who are shaping the future of medicine.
-            </p>
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-900 px-4">
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center p-12 bg-white rounded-[4rem] max-w-xl shadow-2xl">
+          <div className="text-6xl mb-8">{pendingApproval ? "⏳" : "🚀"}</div>
+          <h2 className="text-3xl font-black text-surface-900 mb-6 uppercase tracking-tighter">
+            {pendingApproval ? "Application Submitted" : "Welcome to CHAMP!"}
+          </h2>
+          <p className="text-lg text-surface-500 font-medium mb-8">
+            {pendingApproval
+              ? "Your contributor application is being reviewed by the CHAMP administration. We will notify you via email once approved."
+              : "Your account is ready. Redirecting..."}
+          </p>
+          <Link to="/login" className="text-xs font-black text-primary-600 uppercase tracking-widest hover:underline">
+            Go to Login →
+          </Link>
+        </motion.div>
+      </div>
+    );
+  }
 
-            {/* Testimonial */}
-            <div className="mt-12 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-              <p className="text-primary-100 text-sm italic leading-relaxed mb-4">
-                "CHAMP has been instrumental in connecting me with researchers worldwide. The events and community discussions have directly influenced my clinical practice."
-              </p>
-              <div className="flex items-center gap-3">
-                <img
-                  src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=40&h=40&fit=crop&crop=face"
-                  alt="Testimonial"
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-white/20"
+  return (
+    <div className="min-h-screen bg-surface-50 py-20 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-6xl font-black text-surface-900 uppercase tracking-tighter">Lead the Change</h1>
+          <p className="text-xl text-primary-600 font-bold uppercase tracking-widest mt-4">CHAMP 21 Registration — Contributor Access</p>
+          <p className="text-surface-500 mt-3 max-w-xl mx-auto">Join the ranks of healthcare leaders. Contributors can publish technical content, case studies, and lead industry sessions.</p>
+        </div>
+
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white p-12 rounded-[4rem] shadow-2xl border border-surface-100">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-surface-400 uppercase tracking-widest">Full Name</label>
+                <input required name="name" onChange={handleChange} value={formData.name} type="text" className="contribute-input" placeholder="Dr. Sarah Mitchell" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-surface-400 uppercase tracking-widest">Professional Email</label>
+                <input required name="email" onChange={handleChange} value={formData.email} type="email" className="contribute-input" placeholder="sarah@hospital.com" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-surface-400 uppercase tracking-widest">Password</label>
+              <input required name="password" onChange={handleChange} value={formData.password} type="password" className="contribute-input" placeholder="••••••••" />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-surface-400 uppercase tracking-widest">Topics of Expertise (Comma Separated) <span className="text-primary-600">*</span></label>
+              <input required name="expertise" onChange={handleChange} value={formData.expertise} type="text" className="contribute-input" placeholder="Operational Efficiency, Patient Flow, Accreditation" />
+              <p className="text-[10px] text-surface-400">Adding expertise registers you as an L2 Contributor — pending admin review.</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-surface-400 uppercase tracking-widest">Expertise Level</label>
+              <select name="expertiseLevel" onChange={handleChange} value={formData.expertiseLevel} className="contribute-input appearance-none">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate (5–10 yrs)</option>
+                <option value="Expert">Expert (10+ yrs)</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-surface-400 uppercase tracking-widest">Professional Verification Document(PDF) <span className="text-primary-600">*</span></label>
+              <div className="relative">
+                <input
+                  required
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
-                <div>
-                  <p className="text-white text-sm font-semibold">Dr. Michael Chen</p>
-                  <p className="text-primary-300 text-xs">Oncologist, MD Anderson</p>
+                <div className={`contribute-input flex items-center gap-3 ${proofFile ? 'border-primary-500 bg-primary-50' : ''}`}>
+                  <span className="text-xl">{proofFile ? '📄' : '📤'}</span>
+                  <span className="truncate text-sm font-bold">
+                    {proofFile ? proofFile.name : "Upload valid proof of experience"}
+                  </span>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Right - Form */}
-      <div className="flex-1 flex items-center justify-center px-8 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
-        >
-          <div className="lg:hidden flex items-center gap-2.5 mb-8">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">C</span>
-            </div>
-            <span className="text-xl font-bold text-primary-700">CHAMP</span>
-          </div>
-
-          <h2 className="text-2xl font-bold text-surface-900 mb-1">Create your account</h2>
-          <p className="text-surface-500 mb-8">Join the healthcare community today</p>
-
-          <form onSubmit={handleSignup} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-surface-700 mb-1.5">Full Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-surface-200 bg-white text-surface-800 placeholder-surface-400 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none"
-                placeholder="Dr. John Smith"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-surface-700 mb-1.5">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-surface-200 bg-white text-surface-800 placeholder-surface-400 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none"
-                placeholder="john.smith@hospital.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-surface-700 mb-1.5">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-surface-200 bg-white text-surface-800 placeholder-surface-400 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none"
-                placeholder="Create a strong password"
-              />
+              <p className="text-[10px] text-surface-400">Please upload a PDF document (License, Certificate, or ID) for verification.</p>
             </div>
 
-            <label className="flex items-start gap-2 cursor-pointer">
-              <input type="checkbox" defaultChecked className="mt-1 w-4 h-4 rounded border-surface-300 text-primary-600 focus:ring-primary-500" />
-              <span className="text-xs text-surface-500 leading-relaxed">
-                I agree to the <span className="text-primary-600 font-medium">Terms of Service</span> and <span className="text-primary-600 font-medium">Privacy Policy</span>
-              </span>
-            </label>
+            {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold uppercase text-center">{error}</div>}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl hover:shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
-                  Creating account...
-                </>
-              ) : (
-                "Create Account"
-              )}
+            <button disabled={loading} className="btn-primary w-full py-6 text-sm font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-primary-500/20">
+              {loading ? "Submitting Application..." : "Submit Application for Review"}
             </button>
-          </form>
+            <p className="text-center text-[10px] text-surface-400 font-bold uppercase tracking-widest">By submitting, you agree to our Code of Ethics and Professional Guidelines.</p>
 
-          <div className="mt-6 text-center text-sm text-surface-500">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary-600 hover:text-primary-700 font-semibold">
-              Sign in
-            </Link>
-          </div>
+            <div className="text-center pt-2">
+              <span className="text-[10px] text-surface-400">Already have an account? </span>
+              <Link to="/login" className="text-[10px] text-primary-600 font-black uppercase tracking-widest hover:underline">Sign In Here →</Link>
+            </div>
+
+            <div className="text-center text-[8px] text-surface-300 font-bold uppercase tracking-[0.2em] mt-8 pt-8 border-t border-surface-50">
+              CHAMP Institutional Governance & Compliance Framework
+            </div>
+          </form>
         </motion.div>
       </div>
     </div>
   );
 }
+

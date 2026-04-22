@@ -13,9 +13,8 @@ import ProfilePage from "./pages/ProfilePage";
 import PricingPage from "./pages/PricingPage";
 import JoinChampPage from "./pages/JoinChampPage";
 import CertificationPage from "./pages/CertificationPage";
-import ContributeSignupPage from "./pages/ContributeSignupPage";
 import AdminDashboard from "./pages/dashboards/admin/AdminDashboard";
-import SpeakerDashboard from "./pages/dashboards/speaker/SpeakerDashboard";
+import ContributorDashboard from "./pages/dashboards/contributor/ContributorDashboard";
 import UserDashboard from "./pages/dashboards/user/UserDashboard";
 
 import RegisterCertificationPage from "./pages/RegisterCertificationPage";
@@ -183,12 +182,12 @@ export default function App() {
         <Route path="/legal/ethics" element={<AppLayout><EthicsPage /></AppLayout>} />
         <Route path="/legal/refund" element={<AppLayout><RefundPolicyPage /></AppLayout>} />
 
-        <Route path="/contribute-signup" element={<AppLayout><ContributeSignupPage /></AppLayout>} />
+
 
         {/* Dashboards */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
         <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-        <Route path="/dashboard/speaker" element={<ProtectedRoute><SpeakerDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/contributor" element={<ProtectedRoute><ContributorDashboard /></ProtectedRoute>} />
         <Route path="/dashboard/user" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
 
         <Route path="/register-certification" element={<AppLayout><RegisterCertificationPage /></AppLayout>} />

@@ -7,8 +7,8 @@ import { authApi } from "../api/api";
 export default function LoginPage() {
   const navigate = useNavigate();
   const { setAuth } = useStore();
-  const [email, setEmail] = useState("sarah.mitchell@champ.io");
-  const [password, setPassword] = useState("password");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,8 +23,8 @@ export default function LoginPage() {
 
       // Role-based redirection
       if (data.user.role === "admin") navigate("/dashboard/admin");
-      else if (data.user.role === "speaker") navigate("/dashboard/speaker");
-      else if (data.user.role === "user") navigate("/dashboard/user");
+      else if (data.user.role === "L2" || data.user.role === "L3") navigate("/dashboard/contributor");
+      else if (data.user.role === "L1") navigate("/dashboard/user");
       else navigate("/");
     } catch (err) {
       setError(err.message || "Invalid credentials");
@@ -106,14 +106,13 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`p-4 rounded-xl mb-6 flex items-start gap-3 border ${
-                error.toLowerCase().includes("pending admin approval")
+              className={`p-4 rounded-xl mb-6 flex items-start gap-3 border ${error.toLowerCase().includes("pending admin approval")
                 ? "bg-accent-50 border-accent-200 text-accent-700"
                 : "bg-red-50 border-red-200 text-red-700"
-              }`}
+                }`}
             >
               <div className="text-xl">
-                 {error.toLowerCase().includes("pending admin approval") ? "⌛" : "⚠️"}
+                {error.toLowerCase().includes("pending admin approval") ? "⌛" : "⚠️"}
               </div>
               <div>
                 <p className="text-xs font-black uppercase tracking-widest mb-1">System Message</p>

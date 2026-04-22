@@ -182,9 +182,9 @@ export default function Navbar() {
               <div className="p-3 space-y-1">
                 <Link 
                   to={
-                    user?.role === "admin" ? "/dashboard/admin" : 
-                    user?.role === "speaker" ? "/dashboard/speaker" : 
-                    user?.role === "user" ? "/dashboard/user" : "/profile"
+                    user?.role === "admin" ? "/dashboard/admin" :
+                    (user?.role === "L2" || user?.role === "L3") ? "/dashboard/contributor" :
+                    user?.role === "L1" ? "/dashboard/user" : "/profile"
                   } 
                   className="flex items-center gap-3 px-4 py-3 text-[10px] font-black text-primary-600 bg-primary-50/50 hover:bg-primary-50 rounded-2xl transition-all uppercase tracking-widest"
                 >
@@ -236,9 +236,9 @@ export default function Navbar() {
                   <div className="space-y-2">
                     <Link 
                       to={
-                        user?.role === "admin" ? "/dashboard/admin" : 
-                        user?.role === "speaker" ? "/dashboard/speaker" : 
-                        user?.role === "user" ? "/dashboard/user" : "/profile"
+                        user?.role === "admin" ? "/dashboard/admin" :
+                        (user?.role === "L2" || user?.role === "L3") ? "/dashboard/contributor" :
+                        user?.role === "L1" ? "/dashboard/user" : "/profile"
                       }
                       className="block w-full text-center bg-primary-50 text-primary-600 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest"
                     >

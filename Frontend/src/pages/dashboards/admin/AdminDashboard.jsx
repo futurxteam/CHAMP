@@ -14,6 +14,9 @@ export default function AdminDashboard() {
    const [loading, setLoading] = useState(false);
    const [pendingContent, setPendingContent] = useState([]);
    const [expandedItem, setExpandedItem] = useState(null);
+    const [roleChanges, setRoleChanges] = useState({});
+    const [rejectionReasons, setRejectionReasons] = useState({});
+    const [showRejectInput, setShowRejectInput] = useState(null);
 
    // Event Management State
    const [events, setEvents] = useState([]);
@@ -22,6 +25,8 @@ export default function AdminDashboard() {
    const [eventData, setEventData] = useState({
       title: "", date: "", time: "10:00 AM", description: "", location: "", thumbnail: "", maxOccupants: 50, registrationTimeline: ""
    });
+   const [thumbnailFile, setThumbnailFile] = useState(null);
+   const [uploading, setUploading] = useState(false);
 
    const fetchAdminEvents = async () => {
       setLoading(true);
@@ -34,17 +39,31 @@ export default function AdminDashboard() {
 
    const handleSubmitEvent = async (e) => {
       e.preventDefault();
+      setUploading(true);
       try {
+         const formData = new FormData();
+         Object.keys(eventData).forEach(key => {
+            if (eventData[key] !== undefined && eventData[key] !== null) {
+               formData.append(key, eventData[key]);
+            }
+         });
+         
+         if (thumbnailFile) {
+            formData.append("thumbnail", thumbnailFile);
+         }
+
          if (editingEvent) {
-            await eventApi.update(editingEvent._id, eventData, token);
+            await eventApi.update(editingEvent._id, formData, token);
          } else {
-            await eventApi.create(eventData, token);
+            await eventApi.create(formData, token);
          }
          setShowEventForm(false);
          setEditingEvent(null);
+         setThumbnailFile(null);
          setEventData({ title: "", date: "", time: "10:00 AM", description: "", location: "", thumbnail: "", maxOccupants: 50, registrationTimeline: "" });
          fetchAdminEvents();
       } catch (err) { alert(err.message); }
+      finally { setUploading(false); }
    };
 
    const handleDeleteEvent = async (id) => {
@@ -90,8 +109,23 @@ export default function AdminDashboard() {
 
    const handleContentAction = async (id, action) => {
       try {
-         if (action === "approve") await adminApi.approveContent(id, token);
-         else await adminApi.rejectContent(id, "Content policy violation", token);
+         if (action === "approve") {
+            await adminApi.approveContent(id, token);
+         } else {
+            const reason = rejectionReasons[id] || "Changes requested by Admin";
+            await adminApi.rejectContent(id, reason, token);
+            setShowRejectInput(null);
+         }
+         fetchContent();
+      } catch (err) {
+         alert(err.message);
+      }
+   };
+
+   const handleDeleteContent = async (id) => {
+      if (!window.confirm("Permanently remove this content from the platform?")) return;
+      try {
+         await adminApi.deleteContent(id, token);
          fetchContent();
       } catch (err) {
          alert(err.message);
@@ -100,7 +134,34 @@ export default function AdminDashboard() {
 
    const updateStatus = async (id, status) => {
       try {
-         await adminApi.updateUserStatus(id, status, token);
+         const userToUpdate = users.find(u => u._id === id);
+         const finalRole = roleChanges[id] || userToUpdate?.role;
+         await adminApi.updateUserStatus(id, status, token, finalRole);
+         setRoleChanges(prev => {
+            const next = { ...prev };
+            delete next[id];
+            return next;
+         });
+         fetchUsers(userMeta.current);
+      } catch (err) {
+         alert(err.message);
+      }
+   };
+
+   const handleRoleChangeSelect = (id, newRole) => {
+      setRoleChanges(prev => ({ ...prev, [id]: newRole }));
+   };
+
+   const confirmRoleChange = async (id) => {
+      try {
+         const newRole = roleChanges[id];
+         const u = users.find(user => user._id === id);
+         await adminApi.updateUserStatus(id, u.status, token, newRole);
+         setRoleChanges(prev => {
+            const next = { ...prev };
+            delete next[id];
+            return next;
+         });
          fetchUsers(userMeta.current);
       } catch (err) {
          alert(err.message);
@@ -111,7 +172,7 @@ export default function AdminDashboard() {
       try {
          const blocks = JSON.parse(contentStr);
          if (!Array.isArray(blocks)) return <p className="text-sm">{contentStr}</p>;
-         
+
          return (
             <div className="space-y-6">
                {blocks.map((block, i) => (
@@ -127,63 +188,97 @@ export default function AdminDashboard() {
       }
    };
 
-    useEffect(() => {
-       if (activeTab === "users") fetchUsers(1);
-       if (activeTab === "content") fetchContent();
-       if (activeTab === "events") fetchAdminEvents();
-    }, [activeTab, filters.role, token]);
+   useEffect(() => {
+      if (activeTab === "users") fetchUsers(1);
+      if (activeTab === "content") fetchContent();
+      if (activeTab === "events") fetchAdminEvents();
+   }, [activeTab, filters.role, token]);
 
-    return (
-       <div className="dashboard-layout">
-          {/* ... Modal for Event Creation/Edit ... */}
-          {showEventForm && (
-             <div className="fixed inset-0 z-[100] bg-surface-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-white rounded-[3rem] w-full max-w-2xl p-10 shadow-2xl animate-in zoom-in-95 duration-300">
-                   <div className="flex justify-between items-center mb-8">
-                      <h2 className="text-2xl font-black text-surface-900 uppercase tracking-tighter">
-                         {editingEvent ? "Edit Platform Event" : "Initialize New Event"}
-                      </h2>
-                      <button onClick={() => { setShowEventForm(false); setEditingEvent(null); }} className="text-2xl">✕</button>
-                   </div>
-                   
-                   <form onSubmit={handleSubmitEvent} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2 md:col-span-2">
-                         <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Event Heading</label>
-                         <input required type="text" value={eventData.title} onChange={e => setEventData({...eventData, title: e.target.value})} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none focus:border-primary-600 transition-colors" />
-                      </div>
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Event Date</label>
-                         <input required type="date" value={eventData.date} onChange={e => setEventData({...eventData, date: e.target.value})} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" />
-                      </div>
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Event Time</label>
-                         <input required type="text" value={eventData.time} onChange={e => setEventData({...eventData, time: e.target.value})} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" placeholder="e.g. 10:00 AM" />
-                      </div>
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Location / Link</label>
-                         <input required type="text" value={eventData.location} onChange={e => setEventData({...eventData, location: e.target.value})} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" />
-                      </div>
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Max Occupants</label>
-                         <input required type="number" value={eventData.maxOccupants} onChange={e => setEventData({...eventData, maxOccupants: e.target.value})} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" />
-                      </div>
-                      <div className="space-y-2 md:col-span-2">
-                         <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Registration Deadline</label>
-                         <input required type="date" value={eventData.registrationTimeline} onChange={e => setEventData({...eventData, registrationTimeline: e.target.value})} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" />
-                      </div>
-                      <div className="space-y-2 md:col-span-2">
-                         <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Brief Description</label>
-                         <textarea required value={eventData.description} onChange={e => setEventData({...eventData, description: e.target.value})} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none h-24 resize-none" />
-                      </div>
-                      <div className="md:col-span-2 pt-4">
-                         <button type="submit" className="w-full py-4 bg-surface-900 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-primary-600 transition-all">
-                            {editingEvent ? "Commit Changes" : "Publish Event"}
-                         </button>
-                      </div>
-                   </form>
-                </div>
-             </div>
-          )}
+   return (
+      <div className="dashboard-layout">
+         {/* ... Modal for Event Creation/Edit ... */}
+         {showEventForm && (
+            <div className="fixed inset-0 z-[100] bg-surface-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+               <div className="bg-white rounded-[3rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto p-10 shadow-2xl animate-in zoom-in-95 duration-300 custom-scrollbar">
+                  <div className="flex justify-between items-center mb-8 sticky top-0 bg-white z-20 pb-4">
+                     <h2 className="text-2xl font-black text-surface-900 uppercase tracking-tighter">
+                        {editingEvent ? "Edit Platform Event" : "Initialize New Event"}
+                     </h2>
+                     <button onClick={() => { setShowEventForm(false); setEditingEvent(null); setThumbnailFile(null); }} className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-50 hover:bg-surface-100 transition-colors text-xl">✕</button>
+                  </div>
+
+                  <form onSubmit={handleSubmitEvent} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div className="space-y-2 md:col-span-2">
+                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Cover Picture (Thumbnail)</label>
+                        <div className="relative group">
+                           <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={(e) => setThumbnailFile(e.target.files[0])}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                           />
+                           <div className={`w-full p-4 rounded-2xl border-2 border-dashed flex items-center gap-4 transition-all ${thumbnailFile ? 'border-primary-500 bg-primary-50' : 'border-surface-100 bg-surface-50 hover:border-primary-200'}`}>
+                              <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-xl">
+                                 {thumbnailFile ? '🖼️' : '📁'}
+                               </div>
+                               <div>
+                                  <p className="text-[10px] font-black text-surface-900 uppercase tracking-widest">
+                                     {thumbnailFile ? thumbnailFile.name : "Select cover image..."}
+                                  </p>
+                                  <p className="text-[8px] text-surface-400 font-bold uppercase tracking-widest">JPG, PNG or WEBP (Max 5MB)</p>
+                               </div>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="space-y-2 md:col-span-2">
+                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Event Heading</label>
+                        <input required type="text" value={eventData.title} onChange={e => setEventData({ ...eventData, title: e.target.value })} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none focus:border-primary-600 transition-colors" />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Event Date</label>
+                        <input required type="date" value={eventData.date} onChange={e => setEventData({ ...eventData, date: e.target.value })} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Event Time</label>
+                        <input required type="text" value={eventData.time} onChange={e => setEventData({ ...eventData, time: e.target.value })} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" placeholder="e.g. 10:00 AM" />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Location / Link</label>
+                        <input required type="text" value={eventData.location} onChange={e => setEventData({ ...eventData, location: e.target.value })} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Max Occupants</label>
+                        <input required type="number" value={eventData.maxOccupants} onChange={e => setEventData({ ...eventData, maxOccupants: e.target.value })} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" />
+                     </div>
+                     <div className="space-y-2 md:col-span-2">
+                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Registration Deadline</label>
+                        <input required type="date" value={eventData.registrationTimeline} onChange={e => setEventData({ ...eventData, registrationTimeline: e.target.value })} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" />
+                     </div>
+                     <div className="space-y-2 md:col-span-2">
+                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Brief Description</label>
+                        <textarea required value={eventData.description} onChange={e => setEventData({ ...eventData, description: e.target.value })} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none h-24 resize-none" />
+                     </div>
+                     <div className="md:col-span-2 pt-4 flex gap-4">
+                        <button 
+                           type="submit" 
+                           disabled={uploading}
+                           className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl transition-all ${uploading ? 'bg-surface-200 text-surface-400' : 'bg-surface-900 text-white hover:bg-primary-600'}`}
+                        >
+                           {uploading ? "Uploading & Syncing..." : editingEvent ? "Commit Changes" : "Publish Event"}
+                        </button>
+                        <button 
+                           type="button"
+                           onClick={() => { setShowEventForm(false); setEditingEvent(null); setThumbnailFile(null); }}
+                           className="px-10 py-4 border-2 border-surface-100 text-surface-400 rounded-2xl font-black uppercase tracking-widest hover:bg-surface-50 transition-all"
+                        >
+                           Discard
+                        </button>
+                     </div>
+                  </form>
+               </div>
+            </div>
+         )}
          <aside className="dashboard-sidebar">
             <div className="px-4 mb-8">
                <Link to="/" className="flex items-center gap-2 group">
@@ -299,9 +394,10 @@ export default function AdminDashboard() {
                            value={filters.role}
                            onChange={(e) => setFilters({ ...filters, role: e.target.value })}
                         >
-                           <option value="">All Institutional Roles</option>
-                           <option value="user">Member (Health Professional)</option>
-                           <option value="speaker">Expert Facilitator</option>
+                           <option value="">All Roles</option>
+                           <option value="L1">L1 — Member</option>
+                           <option value="L2">L2 — Contributor</option>
+                           <option value="L3">L3 — Senior Contributor</option>
                         </select>
                         <button
                            onClick={() => fetchUsers(1)}
@@ -325,19 +421,54 @@ export default function AdminDashboard() {
                                           {u.status === "pending" && <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />}
                                        </div>
                                        <p className="text-xs text-surface-400 font-bold tracking-tight">{u.email}</p>
-                                       {u.role === "speaker" && u.speakerProfile && (
-                                          <div className="mt-2 text-[9px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-0.5 rounded inline-block">
-                                             Expertise: {u.speakerProfile.expertise || "General"}
+                                       {u.isContributor && u.expertise?.length > 0 && (
+                                          <div className="flex flex-wrap gap-2 mt-2">
+                                             <div className="text-[9px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-0.5 rounded inline-block">
+                                                Expertise: {u.expertise.join(", ")}
+                                             </div>
+                                             {u.proofUrl && (
+                                                <a
+                                                   href={u.proofUrl}
+                                                   target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   className="text-[9px] font-black text-accent-600 uppercase tracking-widest bg-accent-50 px-2 py-0.5 rounded inline-block hover:bg-accent-100 transition-colors"
+                                                >
+                                                   📄 View Document
+                                                </a>
+                                             )}
                                           </div>
                                        )}
                                     </div>
                                  </div>
 
                                  <div className="flex flex-wrap items-center gap-4">
-                                    <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest ${u.role === "speaker" ? "bg-primary-50 text-primary-600" : "bg-surface-50 text-surface-500"
-                                       }`}>
-                                       {u.role === "speaker" ? "Facilitator" : "Member"}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                       <div className="relative">
+                                          <select
+                                             value={roleChanges[u._id] || u.role}
+                                             onChange={(e) => handleRoleChangeSelect(u._id, e.target.value)}
+                                             className={`appearance-none px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all border-2 border-transparent focus:border-primary-200 outline-none pr-8 ${
+                                                (roleChanges[u._id] || u.role) === "L3" ? "bg-accent-50 text-accent-600 hover:bg-accent-100" :
+                                                (roleChanges[u._id] || u.role) === "L2" ? "bg-primary-50 text-primary-600 hover:bg-primary-100" :
+                                                "bg-surface-50 text-surface-500 hover:bg-surface-100"
+                                             }`}
+                                          >
+                                             <option value="L1">L1 — Member</option>
+                                             <option value="L2">L2 — Contributor</option>
+                                             <option value="L3">L3 — Senior</option>
+                                          </select>
+                                          <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[8px] opacity-40">▼</div>
+                                       </div>
+                                       {roleChanges[u._id] && roleChanges[u._id] !== u.role && (
+                                          <button
+                                             onClick={() => confirmRoleChange(u._id)}
+                                             className="w-8 h-8 flex items-center justify-center bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all shadow-lg animate-in zoom-in duration-200"
+                                             title="Confirm Role Change"
+                                          >
+                                             ✓
+                                          </button>
+                                       )}
+                                    </div>
 
                                     <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest italic ${u.status === "approved" ? "text-green-500" :
                                        u.status === "blocked" ? "text-red-500" : "text-amber-500"
@@ -398,12 +529,12 @@ export default function AdminDashboard() {
                               <div className="flex justify-between items-start mb-6">
                                  <div>
                                     <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter">{item.title}</h3>
-                                    <p className="text-xs text-primary-600 font-bold uppercase tracking-widest mt-1">Submitted by {item.speaker?.name}</p>
+                                    <p className="text-xs text-primary-600 font-bold uppercase tracking-widest mt-1">Submitted by {item.user?.name}</p>
                                  </div>
                                  <span className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black uppercase rounded-full tracking-widest">Pending Review</span>
                               </div>
 
-                              <div 
+                              <div
                                  onClick={() => setExpandedItem(expandedItem === item._id ? null : item._id)}
                                  className={`p-6 bg-surface-50 rounded-2xl mb-8 cursor-pointer hover:bg-primary-50 transition-colors relative ${expandedItem === item._id ? "" : "max-h-[200px] overflow-hidden"}`}
                               >
@@ -428,7 +559,7 @@ export default function AdminDashboard() {
                                     )}
                                     {renderContent(item.content)}
                                  </div>
-                                 
+
                                  {expandedItem !== item._id && (
                                     <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-surface-50 to-transparent flex items-end justify-center pb-4">
                                        <span className="text-[10px] font-black uppercase tracking-widest text-primary-600">Click to Review Article & Media Details</span>
@@ -436,25 +567,56 @@ export default function AdminDashboard() {
                                  )}
                               </div>
 
-                              <div className="flex gap-4">
-                                 <button
-                                    onClick={() => handleContentAction(item._id, "approve")}
-                                    className="px-8 py-3 bg-primary-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
-                                 >
-                                    Publish Content
-                                 </button>
-                                 <button
-                                    onClick={() => handleContentAction(item._id, "reject")}
-                                    className="px-8 py-3 border-2 border-red-100 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all"
-                                 >
-                                    Request Changes
-                                 </button>
-                              </div>
-                           </div>
-                        ))
-                     )}
-                  </div>
-               )}
+                              {showRejectInput === item._id ? (
+                                 <div className="mb-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                    <textarea
+                                       placeholder="Type instructions for the contributor (Optional)..."
+                                       className="w-full p-4 rounded-2xl border-2 border-amber-100 bg-amber-50/30 text-sm font-bold text-surface-900 outline-none focus:border-amber-200 h-24 resize-none"
+                                       value={rejectionReasons[item._id] || ""}
+                                       onChange={(e) => setRejectionReasons({ ...rejectionReasons, [item._id]: e.target.value })}
+                                    />
+                                    <div className="flex gap-2">
+                                       <button
+                                          onClick={() => handleContentAction(item._id, "reject")}
+                                          className="px-6 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20"
+                                       >
+                                          Send Instructions
+                                       </button>
+                                       <button
+                                          onClick={() => setShowRejectInput(null)}
+                                          className="px-6 py-2 text-surface-400 text-[10px] font-black uppercase tracking-widest"
+                                       >
+                                          Cancel
+                                       </button>
+                                    </div>
+                                 </div>
+                              ) : (
+                                 <div className="flex flex-wrap gap-4">
+                                    <button
+                                       onClick={() => handleContentAction(item._id, "approve")}
+                                       className="px-8 py-3 bg-primary-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
+                                    >
+                                       Publish Content
+                                    </button>
+                                    <button
+                                       onClick={() => setShowRejectInput(item._id)}
+                                       className="px-8 py-3 border-2 border-amber-100 text-amber-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-50 transition-all"
+                                    >
+                                       Request Changes
+                                    </button>
+                                    <button
+                                       onClick={() => handleDeleteContent(item._id)}
+                                       className="px-8 py-3 border-2 border-red-100 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all ml-auto"
+                                    >
+                                       Delete
+                                    </button>
+                                  </div>
+                               )}
+                            </div>
+                         ))
+                      )}
+                   </div>
+                )}
 
                {activeTab === "events" && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
@@ -463,7 +625,7 @@ export default function AdminDashboard() {
                            <h3 className="text-3xl font-black text-surface-900">{events.length}</h3>
                            <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mt-1">Total Platform Events</p>
                         </div>
-                        <button 
+                        <button
                            onClick={() => { setEditingEvent(null); setEventData({ title: "", date: "", time: "10:00 AM", description: "", location: "", thumbnail: "", maxOccupants: 50, registrationTimeline: "" }); setShowEventForm(true); }}
                            className="h-24 px-10 bg-surface-900 text-white rounded-3xl font-black uppercase tracking-widest text-xs hover:bg-primary-600 transition-all shadow-xl"
                         >
@@ -497,9 +659,9 @@ export default function AdminDashboard() {
                                     </div>
 
                                     <div className="flex gap-2">
-                                       <button 
-                                          onClick={() => { 
-                                             setEditingEvent(event); 
+                                       <button
+                                          onClick={() => {
+                                             setEditingEvent(event);
                                              setEventData({
                                                 title: event.title,
                                                 date: event.date ? new Date(event.date).toISOString().split('T')[0] : "",
@@ -516,7 +678,7 @@ export default function AdminDashboard() {
                                        >
                                           Edit
                                        </button>
-                                       <button 
+                                       <button
                                           onClick={() => handleDeleteEvent(event._id)}
                                           className="p-4 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl transition-all font-black text-xs uppercase"
                                        >
@@ -545,3 +707,6 @@ export default function AdminDashboard() {
       </div>
    );
 }
+
+
+

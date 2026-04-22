@@ -145,7 +145,7 @@ export default function EngagementPage() {
            <div className="bg-white p-12 md:p-16 rounded-[4rem] border border-surface-200 shadow-2xl">
               <h2 className="text-3xl font-black text-surface-900 mb-8">Participate, Learn, and Lead</h2>
               <div className="flex flex-col md:flex-row justify-center gap-6">
-                <Link to="/contribute-signup" className="btn-primary px-10 py-5">Lead a Session</Link>
+                <Link to="/signup" className="btn-primary px-10 py-5">Lead a Session</Link>
                 <Link to="/join" className="btn-outline-dark px-10 py-5">Join CHAMP</Link>
                 <Link to="/certification-assessment" className="btn-outline-dark px-10 py-5">Explore Certification</Link>
               </div>
