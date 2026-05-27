@@ -16,16 +16,20 @@ const protect = async (req, res, next) => {
 
       // Get user from token excluding password
       req.user = await User.findById(decoded.id).select("-password");
+      
+      if (!req.user) {
+        return res.status(401).json({ message: "Not authorized, user not found" });
+      }
 
-      next();
+      return next();
     } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: "Not authorized, token failed" });
+      console.error("Auth Middleware Error:", error.message);
+      return res.status(401).json({ message: "Not authorized, token failed" });
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: "Not authorized, no token" });
+    return res.status(401).json({ message: "Not authorized, no token" });
   }
 };
 
@@ -53,6 +57,14 @@ export const adminOnly = (req, res, next) => {
     return next();
   }
   res.status(403).json({ message: "Admin access only" });
+};
+
+// L1 only — certified test-takers
+export const requireL1 = (req, res, next) => {
+  if (req.user && req.user.role === "L1") {
+    return next();
+  }
+  res.status(403).json({ message: "L1 access only" });
 };
 
 // L2 or L3 — contributors who can create / update content

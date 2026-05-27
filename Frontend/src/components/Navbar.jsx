@@ -55,11 +55,10 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300 ${
-          scrolled
-            ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-surface-100"
-            : "bg-white/80 backdrop-blur-lg border-b border-white/20"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-[100] h-16 transition-all duration-300 ${scrolled
+          ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-surface-100"
+          : "bg-white/80 backdrop-blur-lg border-b border-white/20"
+          }`}
       >
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-6">
           {/* Logo */}
@@ -72,42 +71,41 @@ export default function Navbar() {
 
           {/* Nav Container with Scroll */}
           <div className="hidden md:flex flex-1 items-center gap-2 overflow-hidden relative group/nav">
-             {/* Left Arrow */}
-             <button 
-                onClick={() => handleScrollNav("left")}
-                className="absolute left-0 z-10 p-1 bg-white/90 backdrop-blur rounded-full shadow-md border border-surface-100 opacity-0 group-hover/nav:opacity-100 transition-opacity"
-             >
-                <svg className="w-4 h-4 text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
-             </button>
+            {/* Left Arrow */}
+            <button
+              onClick={() => handleScrollNav("left")}
+              className="absolute left-0 z-10 p-1 bg-white/90 backdrop-blur rounded-full shadow-md border border-surface-100 opacity-0 group-hover/nav:opacity-100 transition-opacity"
+            >
+              <svg className="w-4 h-4 text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+            </button>
 
-             {/* Links */}
-             <div 
-                ref={scrollRef}
-                className="flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth flex-1 px-4"
-                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-             >
-               {navLinks.map((link, idx) => (
-                 <Link
-                   key={idx}
-                   to={link.to}
-                   className={`px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap uppercase tracking-widest ${
-                     isActive(link.to)
-                       ? "text-primary-600 bg-primary-50"
-                       : "text-surface-500 hover:text-surface-900 hover:bg-surface-50"
-                   }`}
-                 >
-                   {link.label}
-                 </Link>
-               ))}
-             </div>
+            {/* Links */}
+            <div
+              ref={scrollRef}
+              className="flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth flex-1 px-4"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {navLinks.map((link, idx) => (
+                <Link
+                  key={idx}
+                  to={link.to}
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all whitespace-nowrap uppercase tracking-widest ${isActive(link.to)
+                    ? "text-primary-600 bg-primary-50"
+                    : "text-surface-500 hover:text-surface-900 hover:bg-surface-50"
+                    }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
 
-             {/* Right Arrow */}
-             <button 
-                onClick={() => handleScrollNav("right")}
-                className="absolute right-0 z-10 p-1 bg-white/90 backdrop-blur rounded-full shadow-md border border-surface-100 opacity-0 group-hover/nav:opacity-100 transition-opacity"
-             >
-                <svg className="w-4 h-4 text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
-             </button>
+            {/* Right Arrow */}
+            <button
+              onClick={() => handleScrollNav("right")}
+              className="absolute right-0 z-10 p-1 bg-white/90 backdrop-blur rounded-full shadow-md border border-surface-100 opacity-0 group-hover/nav:opacity-100 transition-opacity"
+            >
+              <svg className="w-4 h-4 text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+            </button>
           </div>
 
           {/* Right Section */}
@@ -180,12 +178,12 @@ export default function Navbar() {
                 <p className="text-[10px] text-surface-400 mt-1 font-bold italic">{user?.email}</p>
               </div>
               <div className="p-3 space-y-1">
-                <Link 
+                <Link
                   to={
                     user?.role === "admin" ? "/dashboard/admin" :
-                    (user?.role === "L2" || user?.role === "L3") ? "/dashboard/contributor" :
-                    user?.role === "L1" ? "/dashboard/user" : "/profile"
-                  } 
+                      (user?.role === "L2" || user?.role === "L3") ? "/dashboard/contributor" :
+                        user?.role === "L1" ? "/dashboard/user" : "/profile"
+                  }
                   className="flex items-center gap-3 px-4 py-3 text-[10px] font-black text-primary-600 bg-primary-50/50 hover:bg-primary-50 rounded-2xl transition-all uppercase tracking-widest"
                 >
                   Dashboard
@@ -193,7 +191,7 @@ export default function Navbar() {
                 <Link to="/pricing" className="flex items-center gap-3 px-4 py-3 text-[10px] font-black text-surface-600 hover:bg-surface-50 rounded-2xl transition-all uppercase tracking-widest">Membership</Link>
                 <div className="h-px bg-surface-50 mx-2 my-1" />
                 <button
-                  onClick={() => { logout(); navigate("/login"); }}
+                  onClick={() => { logout(); navigate("/"); }}
                   className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-black text-red-600 hover:bg-red-50 rounded-2xl transition-all uppercase tracking-widest"
                 >
                   Sign Out
@@ -216,15 +214,14 @@ export default function Navbar() {
                 <span className="font-black text-surface-400 uppercase tracking-widest text-[10px]">Portal</span>
                 <button onClick={() => setMobileOpen(false)} className="p-2 hover:bg-surface-100 rounded-xl"><svg className="w-6 h-6 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg></button>
               </div>
-              
+
               <div className="flex-1 overflow-y-auto p-6 space-y-2">
                 {navLinks.map((link, idx) => (
-                  <Link 
-                    key={idx} 
-                    to={link.to} 
-                    className={`flex items-center px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                      isActive(link.to) ? "text-primary-600 bg-primary-50" : "text-surface-600 hover:bg-surface-50"
-                    }`}
+                  <Link
+                    key={idx}
+                    to={link.to}
+                    className={`flex items-center px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${isActive(link.to) ? "text-primary-600 bg-primary-50" : "text-surface-600 hover:bg-surface-50"
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -234,17 +231,17 @@ export default function Navbar() {
               <div className="p-6 border-t border-surface-100">
                 {isAuthenticated ? (
                   <div className="space-y-2">
-                    <Link 
+                    <Link
                       to={
                         user?.role === "admin" ? "/dashboard/admin" :
-                        (user?.role === "L2" || user?.role === "L3") ? "/dashboard/contributor" :
-                        user?.role === "L1" ? "/dashboard/user" : "/profile"
+                          (user?.role === "L2" || user?.role === "L3") ? "/dashboard/contributor" :
+                            user?.role === "L1" ? "/dashboard/user" : "/profile"
                       }
                       className="block w-full text-center bg-primary-50 text-primary-600 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest"
                     >
                       Dashboard
                     </Link>
-                    <button onClick={() => { logout(); navigate("/login"); }} className="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest">Sign Out</button>
+                    <button onClick={() => { logout(); navigate("/"); }} className="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest">Sign Out</button>
                   </div>
                 ) : (
                   <Link to="/join" className="block w-full text-center bg-primary-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary-500/20">Join Ecosystem</Link>

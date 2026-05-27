@@ -5,7 +5,7 @@ import useStore from "../../store/useStore";
 export default function DashboardRedirect() {
   const { isAuthenticated, user } = useStore();
 
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/" replace />;
 
   if (user?.role === "admin") return <Navigate to="/dashboard/admin" replace />;
   if (user?.role === "L2" || user?.role === "L3") return <Navigate to="/dashboard/contributor" replace />;

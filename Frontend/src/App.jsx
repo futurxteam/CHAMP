@@ -15,6 +15,9 @@ import JoinChampPage from "./pages/JoinChampPage";
 import CertificationPage from "./pages/CertificationPage";
 import AdminDashboard from "./pages/dashboards/admin/AdminDashboard";
 import ContributorDashboard from "./pages/dashboards/contributor/ContributorDashboard";
+import ContributorCoursesPage from "./pages/dashboards/contributor/ContributorCoursesPage";
+import CreateCoursePage from "./pages/dashboards/contributor/CreateCoursePage";
+import CourseBuilderPage from "./pages/dashboards/contributor/CourseBuilderPage";
 import UserDashboard from "./pages/dashboards/user/UserDashboard";
 
 import RegisterCertificationPage from "./pages/RegisterCertificationPage";
@@ -47,10 +50,29 @@ import TermsConditionsPage from "./pages/TermsConditionsPage";
 import EthicsPage from "./pages/EthicsPage";
 import RefundPolicyPage from "./pages/RefundPolicyPage";
 import DashboardRedirect from "./pages/dashboards/DashboardRedirect";
+import CertificationListPage from "./pages/CertificationListPage";
+import TestPage from "./pages/TestPage";
+import TestResultPage from "./pages/TestResultPage";
+import VerifyCertificatePage from "./pages/VerifyCertificatePage";
+import AdminQuestionsPage from "./pages/dashboards/admin/AdminQuestionsPage";
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useStore();
+  if (!isAuthenticated) return <Navigate to="/" replace />;
+  return children;
+}
+
+function L1Route({ children }) {
+  const { isAuthenticated, user } = useStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role !== "L1") return <Navigate to="/dashboard" replace />;
+  return children;
+}
+
+function AdminRoute({ children }) {
+  const { isAuthenticated, user } = useStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role !== "admin") return <Navigate to="/dashboard" replace />;
   return children;
 }
 
@@ -187,7 +209,11 @@ export default function App() {
         {/* Dashboards */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
         <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/admin/certifications/:certId/questions" element={<AdminRoute><AdminQuestionsPage /></AdminRoute>} />
         <Route path="/dashboard/contributor" element={<ProtectedRoute><ContributorDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/contributor/courses" element={<ProtectedRoute><ContributorDashboard><ContributorCoursesPage /></ContributorDashboard></ProtectedRoute>} />
+        <Route path="/dashboard/contributor/courses/create" element={<ProtectedRoute><ContributorDashboard><CreateCoursePage /></ContributorDashboard></ProtectedRoute>} />
+        <Route path="/dashboard/contributor/courses/:courseId" element={<ProtectedRoute><ContributorDashboard><CourseBuilderPage /></ContributorDashboard></ProtectedRoute>} />
         <Route path="/dashboard/user" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
 
         <Route path="/register-certification" element={<AppLayout><RegisterCertificationPage /></AppLayout>} />
@@ -199,6 +225,12 @@ export default function App() {
         <Route path="/community-ecosystem" element={<AppLayout><CommunityEcosystemPage /></AppLayout>} />
         {/* Protected pages */}
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
+        {/* L1 — Certification & Test routes (result MUST be before :certId) */}
+        <Route path="/certifications" element={<Navigate to="/dashboard/user?tab=test" replace />} />
+        <Route path="/test-result" element={<L1Route><TestResultPage /></L1Route>} />
+        <Route path="/test/:certId" element={<L1Route><TestPage /></L1Route>} />
+        <Route path="/verify/:verificationId" element={<AppLayout><VerifyCertificatePage /></AppLayout>} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />

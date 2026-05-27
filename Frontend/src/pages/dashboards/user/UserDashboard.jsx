@@ -1,17 +1,49 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+// Sanity check
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import "../dashboard.css";
 import useStore from "../../../store/useStore";
-import { contentApi, threadApi, commentApi, eventApi } from "../../../api/api";
+import { contentApi, threadApi, commentApi, eventApi, testApi, domainApi, courseApi } from "../../../api/api";
 import VideoPlayer from "../../../components/VideoPlayer";
 import DiscussionSection from "../../../components/DiscussionSection";
 
 export default function UserDashboard() {
   const { user, logout, token } = useStore();
-  const [activeTab, setActiveTab ] = useState("discover");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "discover");
+  
+  useEffect(() => {
+    setSearchParams({ tab: activeTab });
+  }, [activeTab]);
   const [publishedContent, setPublishedContent] = useState([]);
   const [loading, setLoading] = useState(false);
   const [viewContent, setViewContent] = useState(null);
+  const [certificates, setCertificates] = useState([]);
+  const [certLoading, setCertLoading] = useState(false);
+  const [availableCerts, setAvailableCerts] = useState([]);
+  const [availableCertsLoading, setAvailableCertsLoading] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [courseLoading, setCourseLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // Filters state
+  const [filters, setFilters] = useState({
+      search: "",
+      domain: "",
+      type: ""
+   });
+
+   const [domains, setDomains] = useState([]);
+
+   const fetchDomains = async () => {
+      try {
+         const data = await domainApi.getDomains();
+         setDomains(data);
+      } catch (err) {
+         console.error("Failed to load domains:", err.message);
+      }
+   };
 
   const renderContent = (contentStr) => {
      try {
@@ -48,10 +80,46 @@ export default function UserDashboard() {
   const fetchPublished = async () => {
      setLoading(true);
      try {
-        const data = await contentApi.getPublishedContent(token);
+        const data = await contentApi.getPublishedContent(token, filters);
         setPublishedContent(data);
      } catch (err) { console.error(err); }
      finally { setLoading(false); }
+  };
+
+  const fetchCertificates = async () => {
+    setCertLoading(true);
+    try {
+      const data = await testApi.getMyCertificates(token);
+      setCertificates(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCertLoading(false);
+    }
+  };
+
+  const fetchAvailableCerts = async () => {
+    setAvailableCertsLoading(true);
+    try {
+      const data = await testApi.getCertifications(token);
+      setAvailableCerts(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAvailableCertsLoading(false);
+    }
+  };
+
+  const fetchCourses = async () => {
+    setCourseLoading(true);
+    try {
+      const data = await courseApi.getAll(token);
+      setCourses(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCourseLoading(false);
+    }
   };
 
   const handleToggleLike = async (id) => {
@@ -106,10 +174,17 @@ export default function UserDashboard() {
       } catch (err) { alert(err.message); }
    };
 
-   React.useEffect(() => {
+   useEffect(() => {
+      fetchDomains();
+   }, []);
+
+   useEffect(() => {
       if (activeTab === "discover" || activeTab === "saved") fetchPublished();
       if (activeTab === "events") fetchEvents();
-   }, [activeTab]);
+      if (activeTab === "certs") fetchCertificates();
+      if (activeTab === "test") fetchAvailableCerts();
+      if (activeTab === "learning") fetchCourses();
+   }, [activeTab, filters.domain, filters.type, token]);
 
    const checkActive = (array) => {
       if (!array || !user) return false;
@@ -121,8 +196,6 @@ export default function UserDashboard() {
          return compareId.toString() === myId.toString();
       });
    };
-
-  // L1 users only view — no teaching tab needed (that's in ContributorDashboard)
 
   return (
     <div className="dashboard-layout">
@@ -254,43 +327,107 @@ export default function UserDashboard() {
            ) : (
               <>
                  {activeTab === "discover" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
-                       {publishedContent.map(c => (
-                          <div 
-                             key={c._id} 
-                             onClick={() => setViewContent(c)}
-                             className="p-6 bg-white rounded-[3rem] border border-surface-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group"
-                          >
-                             <div className="aspect-video rounded-[2rem] overflow-hidden mb-6 relative shadow-lg">
-                                {c.thumbnail ? (
-                                   <img src={c.thumbnail} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
-                                ) : (
-                                   <div className="w-full h-full bg-surface-50 flex items-center justify-center text-4xl">
-                                      {c.type === "video" ? "📹" : "📄"}
-                                   </div>
-                                )}
-                                <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-[9px] font-black uppercase tracking-widest">{c.type}</div>
-                             </div>
-                             <div>
-                                <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter line-clamp-2 leading-none group-hover:text-primary-600 transition-colors mb-2">{c.title}</h3>
-                                <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest italic mb-6">By: {c.user?.name}</p>
-                                
-                                <div className="flex justify-between items-center py-4 border-t border-surface-50">
-                                   <div className="flex gap-4">
-                                      <span className="flex items-center gap-1.5 text-[10px] font-black text-surface-400">
-                                         <span className="text-sm">❤️</span> {c.likes?.length || 0}
-                                      </span>
-                                      <span className="flex items-center gap-1.5 text-[10px] font-black text-surface-400">
-                                         <span className="text-sm">💬</span> Discussion Active
-                                      </span>
-                                   </div>
-                                   <span className="w-8 h-8 rounded-full bg-surface-50 flex items-center justify-center text-surface-400 group-hover:bg-surface-900 group-hover:text-white transition-all">➔</span>
-                                </div>
-                             </div>
-                          </div>
-                       ))}
-                    </div>
-                 )}
+                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                        {/* Filters Bar */}
+                        <div className="flex flex-col md:flex-row gap-4 p-6 bg-white rounded-[2.5rem] border border-surface-100 shadow-sm">
+                           <div className="flex-1 relative">
+                              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-surface-300">🔍</span>
+                              <input 
+                                 type="text" 
+                                 placeholder="Search resources, topics, or authors..."
+                                 className="w-full pl-12 pr-6 py-3 bg-surface-50 rounded-2xl border-none outline-none font-bold text-surface-900 placeholder:text-surface-300 transition-all focus:bg-white focus:ring-2 focus:ring-primary-100"
+                                 value={filters.search}
+                                 onChange={(e) => setFilters({...filters, search: e.target.value})}
+                                 onKeyDown={(e) => e.key === "Enter" && fetchPublished()}
+                              />
+                           </div>
+                           <div className="flex gap-4">
+                              <select 
+                                 className="px-6 py-3 bg-surface-50 rounded-2xl border-none outline-none font-black uppercase text-[10px] tracking-widest text-surface-400 cursor-pointer hover:bg-surface-100 transition-all"
+                                 value={filters.domain}
+                                 onChange={(e) => setFilters({...filters, domain: e.target.value})}
+                              >
+                                 <option value="">All Domains</option>
+                                  {domains.map(d => <option key={d} value={d}>{d}</option>)}
+                              </select>
+                              <select 
+                                 className="px-6 py-3 bg-surface-50 rounded-2xl border-none outline-none font-black uppercase text-[10px] tracking-widest text-surface-400 cursor-pointer hover:bg-surface-100 transition-all"
+                                 value={filters.type}
+                                 onChange={(e) => setFilters({...filters, type: e.target.value})}
+                              >
+                                 <option value="">All Types</option>
+                                 <option value="article">Articles</option>
+                                 <option value="video">Videos</option>
+                              </select>
+                              <button 
+                                 onClick={fetchPublished}
+                                 className="px-8 py-3 bg-surface-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all active:scale-95 shadow-lg shadow-surface-900/20"
+                              >
+                                 Apply
+                              </button>
+                           </div>
+                        </div>
+
+                        {loading ? (
+                           <div className="p-20 text-center animate-pulse">
+                              <div className="w-16 h-16 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mx-auto mb-6" />
+                              <p className="text-surface-400 uppercase font-black text-xs tracking-widest">Querying Resource Library...</p>
+                           </div>
+                        ) : publishedContent.length > 0 ? (
+                           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                              {publishedContent.map(c => (
+                                 <div 
+                                    key={c._id} 
+                                    onClick={() => setViewContent(c)}
+                                    className="p-6 bg-white rounded-[3rem] border border-surface-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group"
+                                 >
+                                    <div className="aspect-video rounded-[2rem] overflow-hidden mb-6 relative shadow-lg">
+                                       {c.thumbnail ? (
+                                          <img src={c.thumbnail} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                       ) : (
+                                          <div className="w-full h-full bg-surface-50 flex items-center justify-center text-4xl">
+                                             {c.type === "video" ? "📹" : "📄"}
+                                          </div>
+                                       )}
+                                       <div className="absolute top-4 right-4 flex gap-2">
+                                          {c.domain && <span className="px-3 py-1 bg-primary-600/90 backdrop-blur text-white rounded-full text-[8px] font-black uppercase tracking-widest">{c.domain}</span>}
+                                          <span className="px-3 py-1 bg-white/90 backdrop-blur rounded-full text-[8px] font-black uppercase tracking-widest">{c.type}</span>
+                                       </div>
+                                    </div>
+                                    <div>
+                                       <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter line-clamp-2 leading-none group-hover:text-primary-600 transition-colors mb-2">{c.title}</h3>
+                                       <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest italic mb-6">By: {c.user?.name}</p>
+                                       
+                                       <div className="flex justify-between items-center py-4 border-t border-surface-50">
+                                          <div className="flex gap-4">
+                                             <span className="flex items-center gap-1.5 text-[10px] font-black text-surface-400">
+                                                <span className="text-sm">❤️</span> {c.likes?.length || 0}
+                                             </span>
+                                             <span className="flex items-center gap-1.5 text-[10px] font-black text-surface-400">
+                                                <span className="text-sm">💬</span> Discussion Active
+                                             </span>
+                                          </div>
+                                          <span className="w-8 h-8 rounded-full bg-surface-50 flex items-center justify-center text-surface-400 group-hover:bg-surface-900 group-hover:text-white transition-all">➔</span>
+                                       </div>
+                                    </div>
+                                 </div>
+                              ))}
+                           </div>
+                        ) : (
+                           <div className="p-20 bg-surface-50 rounded-[4rem] border-2 border-dashed border-surface-200 text-center">
+                              <span className="text-6xl mb-6 block">🔍</span>
+                              <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">No matching content found</h3>
+                              <p className="text-surface-400 font-medium mt-2">Try adjusting your filters or search terms.</p>
+                              <button 
+                                 onClick={() => setFilters({ search: "", domain: "", type: "" })}
+                                 className="mt-8 px-8 py-3 bg-surface-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
+                              >
+                                 Clear All Filters
+                              </button>
+                           </div>
+                        )}
+                     </div>
+                  )}
 
                  {activeTab === "saved" && (
                     <div className="space-y-8">
@@ -378,41 +515,250 @@ export default function UserDashboard() {
                                       <label className="text-[10px] font-black uppercase text-white/30 tracking-widest">Primary Role</label>
                                       <p className="text-xl font-black text-white uppercase tracking-tighter">{user?.role === "L1" ? "Healthcare Professional" : user?.role}</p>
                                    </div>
-                                   <div className="flex flex-col gap-1">
-                                      <label className="text-[10px] font-black uppercase text-white/30 tracking-widest">Experience Index</label>
-                                      <p className="text-3xl font-black text-accent-500 italic">Tier 01</p>
-                                   </div>
+                                   {user?.expertise?.length > 0 && (
+                                      <div className="flex flex-col gap-1">
+                                         <label className="text-[10px] font-black uppercase text-white/30 tracking-widest">Areas of Interest</label>
+                                         <p className="text-lg font-bold text-accent-400">{user.expertise.join(", ")}</p>
+                                      </div>
+                                   )}
+                                   {user?.expertiseLevel && (
+                                      <div className="flex flex-col gap-1">
+                                         <label className="text-[10px] font-black uppercase text-white/30 tracking-widest">Skill Tier</label>
+                                         <p className="text-2xl font-black text-accent-500 italic">{user.expertiseLevel}</p>
+                                      </div>
+                                   )}
                                 </div>
                                 <button className="mt-10 w-full py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Update Credentials</button>
+                                <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-accent-500/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
                              </div>
-                             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-accent-500/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
                           </div>
                        </div>
                     </div>
                  )}
 
-                 {activeTab === "certs" && (
-                    <div className="p-12 bg-white rounded-[3rem] border border-surface-100 text-center">
-                       <div className="text-4xl mb-4">🎖️</div>
-                       <h3 className="text-xl font-black text-surface-900 uppercase">No active certifications</h3>
-                       <p className="text-surface-500 mt-2 font-medium">Complete programs and pass assessments to earn your CHAMP 21 credentials.</p>
-                       <Link to="/certification" className="inline-block mt-8 px-8 py-3 bg-primary-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest">Browse Programs</Link>
-                    </div>
-                 )}
+                  {activeTab === "certs" && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                       <div className="flex items-center justify-between mb-8">
+                          <h2 className="text-2xl font-black text-surface-900 uppercase tracking-tighter">My Certifications</h2>
+                          <span className="px-4 py-2 bg-primary-50 text-primary-600 text-[10px] font-black uppercase rounded-full tracking-widest">Learner Credentials</span>
+                       </div>
 
-                 {activeTab === "learning" && (
-                    <div className="grid grid-cols-1 gap-4">
-                       <div className="p-6 bg-surface-50 rounded-2xl border border-dashed border-surface-200 text-center">
-                          <p className="text-sm text-surface-400 font-bold uppercase tracking-widest italic">You aren't enrolled in any active learning tracks yet.</p>
+                       {/* Dynamic Certificates */}
+                       {certLoading ? (
+                          <div className="p-20 text-center">
+                             <div className="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mx-auto mb-4" />
+                             <p className="text-surface-400 uppercase font-black text-[10px] tracking-widest">Retrieving Credentials...</p>
+                          </div>
+                       ) : certificates.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                             {certificates.map((cert) => (
+                                <div key={cert._id} className="p-8 bg-white rounded-[3rem] border border-surface-100 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden">
+                                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-bl-[4rem] -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+                                   <div className="relative z-10">
+                                      <div className="text-3xl mb-6">🎓</div>
+                                      <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter leading-none mb-2">{cert.certification?.title}</h3>
+                                      <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-6 italic">Issued: {new Date(cert.issuedAt).toLocaleDateString()}</p>
+                                      
+                                      <div className="pt-6 border-t border-surface-50 flex items-center justify-between">
+                                         <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest">ID: {cert.verificationId}</span>
+                                         <Link 
+                                            to={`/verify/${cert.verificationId}`}
+                                            className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-all shadow-lg text-xl"
+                                         >
+                                            ➔
+                                         </Link>
+                                      </div>
+                                   </div>
+                                </div>
+                             ))}
+                          </div>
+                       ) : (
+                          <div className="p-12 bg-surface-50 rounded-[3rem] border-2 border-dashed border-surface-200 text-center mb-12">
+                             <div className="text-4xl mb-4">🏅</div>
+                             <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">No Assessment Credentials Yet</h3>
+                             <p className="text-surface-400 font-medium mt-2">Pass a certification test to see your professional certificates here.</p>
+                             <Link to="/certifications" className="inline-block mt-8 px-8 py-3 bg-surface-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all">Start Assessment</Link>
+                          </div>
+                       )}
+
+                       <div className="border-t border-surface-100 pt-12">
+                          <h3 className="text-xs font-black text-surface-300 uppercase tracking-widest mb-8">Registration Documents</h3>
+                          {user?.proofUrl ? (
+                             <div className="p-8 bg-white rounded-[3rem] border border-surface-100 shadow-sm hover:shadow-xl transition-all group max-w-md">
+                                <div className="aspect-[4/3] rounded-[2rem] overflow-hidden mb-6 relative shadow-lg bg-surface-50">
+                                   <img 
+                                      src={user.proofUrl} 
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                                      alt="Registration Document" 
+                                   />
+                                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                                      <a 
+                                         href={user.proofUrl} 
+                                         target="_blank" 
+                                         rel="noopener noreferrer"
+                                         className="w-full py-3 bg-white text-surface-900 text-center rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                      >
+                                         View Full Document
+                                      </a>
+                                   </div>
+                                </div>
+                                <div className="flex justify-between items-start">
+                                   <div>
+                                      <h3 className="text-lg font-black text-surface-900 uppercase tracking-tighter leading-none mb-1">Verification Proof</h3>
+                                      <p className="text-[10px] font-bold text-surface-400 uppercase italic">Signup Attachment</p>
+                                   </div>
+                                   <span className="px-2 py-1 bg-green-50 text-green-600 text-[8px] font-black uppercase rounded tracking-widest border border-green-100">Verified</span>
+                                </div>
+                             </div>
+                          ) : (
+                             <p className="text-sm text-surface-400 italic">No registration documents on file.</p>
+                          )}
                        </div>
                     </div>
                  )}
 
+                 {activeTab === "learning" && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                        <div className="flex items-center justify-between mb-8">
+                           <h2 className="text-2xl font-black text-surface-900 uppercase tracking-tighter">Academic Course Catalog</h2>
+                           <span className="px-4 py-2 bg-primary-50 text-primary-600 text-[10px] font-black uppercase rounded-full tracking-widest">Formal Learning Tracks</span>
+                        </div>
+
+                        {courseLoading ? (
+                           <div className="p-20 text-center">
+                              <div className="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mx-auto mb-4" />
+                              <p className="text-surface-400 uppercase font-black text-[10px] tracking-widest">Opening Curriculum Library...</p>
+                           </div>
+                        ) : courses.length > 0 ? (
+                           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                              {courses.map(course => (
+                                 <div 
+                                    key={course._id}
+                                    className="p-6 bg-white rounded-[3rem] border border-surface-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group flex flex-col"
+                                    onClick={() => navigate(`/course/${course._id}`)}
+                                 >
+                                    <div className="aspect-video rounded-[2rem] overflow-hidden mb-6 relative shadow-lg">
+                                       <img 
+                                          src={course.thumbnail || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800"} 
+                                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                                          alt="" 
+                                       />
+                                       <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-[9px] font-black uppercase tracking-widest">{course.pricingType}</div>
+                                    </div>
+                                    <div className="flex flex-col flex-1">
+                                       <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest mb-2">{course.domain}</span>
+                                       <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter line-clamp-2 leading-none group-hover:text-primary-600 transition-colors mb-4">{course.title}</h3>
+                                       
+                                       <div className="mt-auto pt-6 border-t border-surface-50 flex items-center justify-between">
+                                          <div className="flex flex-col">
+                                             <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Instructor</span>
+                                             <span className="text-[10px] font-black text-surface-600">{course.createdBy?.name}</span>
+                                          </div>
+                                          <div className="flex flex-col text-right">
+                                             <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Enrolment Fee</span>
+                                             <span className="text-sm font-black text-primary-600">
+                                                {course.price > 0 ? `₹${course.price}` : "Scholarship Access"}
+                                             </span>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              ))}
+                           </div>
+                        ) : (
+                           <div className="p-20 bg-surface-50 rounded-[4rem] border-2 border-dashed border-surface-200 text-center">
+                              <span className="text-6xl mb-6 block">📚</span>
+                              <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">New tracks are being curated</h3>
+                              <p className="text-surface-400 font-medium mt-2">Check back soon for specialized healthcare certification programs.</p>
+                           </div>
+                        )}
+                    </div>
+                 )}
+
                  {activeTab === "test" && (
-                    <div className="p-8 bg-surface-900 rounded-[2.5rem] text-white">
-                       <h3 className="text-2xl font-black uppercase mb-4">Competency Assessment</h3>
-                       <p className="text-surface-400 font-medium mb-8">Test your decision-making abilities with our real-world hospital scenarios.</p>
-                       <button className="px-8 py-4 bg-accent-500 text-surface-900 rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 transition-all">Start New Assessment</button>
+                    <div className="space-y-8">
+                       <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-10 bg-surface-900 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group"
+                       >
+                          <div className="relative z-10">
+                             <h3 className="text-2xl font-black uppercase mb-3">Competency Assessment</h3>
+                             <p className="text-surface-400 font-medium max-w-2xl leading-relaxed">
+                                Prove your clinical expertise and decision-making abilities with our real-world healthcare scenarios. 
+                                Earn recognized certifications and showcase your professional standing.
+                             </p>
+                          </div>
+                          <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-primary-600/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-1000" />
+                       </motion.div>
+
+                       {availableCertsLoading ? (
+                          <div className="p-20 text-center">
+                             <div className="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mx-auto mb-4" />
+                             <p className="text-surface-400 uppercase font-black text-[10px] tracking-widest">Scanning Assessment Directory...</p>
+                          </div>
+                       ) : availableCerts.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                             {availableCerts.map((cert, idx) => (
+                                <motion.div 
+                                   key={cert._id} 
+                                   initial={{ opacity: 0, y: 20 }}
+                                   animate={{ opacity: 1, y: 0 }}
+                                   transition={{ delay: idx * 0.1 }}
+                                   className="group bg-white rounded-[2.5rem] border border-surface-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col"
+                                >
+                                   <div className="h-2 bg-gradient-to-r from-primary-500 to-accent-500" />
+                                   <div className="p-8 flex flex-col flex-1">
+                                      <span className="inline-block px-3 py-1 text-[9px] font-black uppercase tracking-widest bg-primary-50 text-primary-600 rounded-full mb-4 self-start">
+                                         {cert.domain}
+                                      </span>
+                                      
+                                      <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter leading-none mb-3 group-hover:text-primary-600 transition-colors">
+                                         {cert.title}
+                                      </h3>
+
+                                      {cert.description && (
+                                         <p className="text-sm text-surface-500 font-medium leading-relaxed mb-6 line-clamp-3">
+                                            {cert.description}
+                                         </p>
+                                      )}
+
+                                      <div className="mt-auto pt-6 border-t border-surface-50 space-y-6">
+                                         <div className="flex items-center justify-between">
+                                            <div className="flex flex-col">
+                                               <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Passing Threshold</span>
+                                               <span className="text-sm font-black text-surface-900">{cert.passingScore}% Correct</span>
+                                            </div>
+                                            <div className="flex flex-col text-right">
+                                               <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Fee Structure</span>
+                                               <span className="text-sm font-black text-primary-600">
+                                                  {cert.price === 0 || !cert.price ? "Free Access" : `₹${cert.price}`}
+                                               </span>
+                                            </div>
+                                         </div>
+
+                                         <button
+                                            onClick={() => navigate(`/test/${cert._id}`)}
+                                            className="w-full py-4 bg-surface-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary-600 transition-all shadow-lg active:scale-95"
+                                         >
+                                            Initialize Test →
+                                         </button>
+                                      </div>
+                                   </div>
+                                </motion.div>
+                             ))}
+                          </div>
+                       ) : (
+                          <motion.div 
+                             initial={{ opacity: 0 }}
+                             animate={{ opacity: 1 }}
+                             className="p-16 bg-surface-50 rounded-[4rem] border-2 border-dashed border-surface-200 text-center"
+                          >
+                             <div className="text-5xl mb-6">📋</div>
+                             <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">No Assessments Available</h3>
+                             <p className="text-surface-400 font-medium mt-2 max-w-sm mx-auto">Our academic board is currently finalizing new certification modules. Please check back shortly.</p>
+                          </motion.div>
+                       )}
                     </div>
                  )}
 

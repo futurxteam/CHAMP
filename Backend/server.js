@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
 import cors from "cors";
 import mongoose from "mongoose";
 
@@ -13,7 +14,11 @@ import adminRoutes from "./routes/adminRoutes.js";
 import contentRoutes from "./routes/contentRoutes.js";
 import threadRoutes from "./routes/threadRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
-dotenv.config();
+import testRoutes from "./routes/testRoutes.js";
+import domainRoutes from "./routes/domainRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
+import moduleRoutes from "./routes/moduleRoutes.js";
+import lessonRoutes from "./routes/lessonRoutes.js";
 
 const app = express();
 
@@ -36,6 +41,11 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/thread", threadRoutes);
 app.use("/api/comment", commentRoutes);
+app.use("/api/test", testRoutes);
+app.use("/api/domains", domainRoutes);
+app.use("/api/courses", courseRoutes);
+app.use("/api/modules", moduleRoutes);
+app.use("/api/lessons", lessonRoutes);
 // Database connection
 const PORT = process.env.PORT || 5000;
 

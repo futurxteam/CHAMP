@@ -9,22 +9,18 @@ const apiHandler = async (endpoint, options = {}) => {
 
   const config = {
     method,
-    headers: {
-      ...headers,
-    },
+    headers: { ...headers },
   };
 
   if (!isFormData) {
-     config.headers["Content-Type"] = "application/json";
-     if (body) config.body = JSON.stringify(body);
+    config.headers["Content-Type"] = "application/json";
+    if (body) config.body = JSON.stringify(body);
   } else {
-     config.body = body;
+    config.body = body;
   }
 
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
-
-    // read as text first (SAFE)
     const text = await response.text();
 
     let data;
@@ -39,15 +35,14 @@ const apiHandler = async (endpoint, options = {}) => {
     }
 
     return data;
-
   } catch (error) {
     console.error(`API Error [${endpoint}]:`, error.message);
     throw error;
   }
 };
 
+// ─── Auth ────────────────────────────────────────────────────────────────────
 export const authApi = {
-  // Unified signup: L1 (no expertise) or L2 contributor (with expertise)
   signup: (name, email, password, expertise = "", expertiseLevel = "", proofFile = null) => {
     const formData = new FormData();
     formData.append("name", name);
@@ -55,28 +50,18 @@ export const authApi = {
     formData.append("password", password);
     formData.append("expertise", expertise);
     formData.append("expertiseLevel", expertiseLevel);
-    if (proofFile) {
-      formData.append("proof", proofFile);
-    }
-    
-    return apiHandler("/auth/signup", {
-      method: "POST",
-      body: formData,
-    });
+    if (proofFile) formData.append("proof", proofFile);
+    return apiHandler("/auth/signup", { method: "POST", body: formData });
   },
 
   login: (email, password) =>
-    apiHandler("/auth/login", {
-      method: "POST",
-      body: { email, password },
-    }),
+    apiHandler("/auth/login", { method: "POST", body: { email, password } }),
 
   getProfile: (token) =>
-    apiHandler("/auth/profile", {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
+    apiHandler("/auth/profile", { headers: { Authorization: `Bearer ${token}` } }),
 };
 
+// ─── Admin ───────────────────────────────────────────────────────────────────
 export const adminApi = {
   // Contributor management
   getPendingContributors: (token) =>
@@ -96,7 +81,6 @@ export const adminApi = {
       headers: { Authorization: `Bearer ${token}` },
     }),
 
-  // Promote L2 → L3
   promoteContributor: (id, token) =>
     apiHandler(`/admin/contributors/${id}/promote`, {
       method: "PUT",
@@ -123,6 +107,13 @@ export const adminApi = {
       headers: { Authorization: `Bearer ${token}` },
     }),
 
+  getAllContent: (token, status = "") => {
+    const query = status ? `?status=${status}` : "";
+    return apiHandler(`/admin/content/all${query}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
   approveContent: (id, token) =>
     apiHandler(`/admin/content/${id}/approve`, {
       method: "PUT",
@@ -143,6 +134,7 @@ export const adminApi = {
     }),
 };
 
+// ─── Content ─────────────────────────────────────────────────────────────────
 export const contentApi = {
   createContent: (contentData, token) =>
     apiHandler("/content/create", {
@@ -163,10 +155,14 @@ export const contentApi = {
       headers: { Authorization: `Bearer ${token}` },
     }),
 
-  getPublishedContent: (token) =>
-    apiHandler("/content/published", {
+  getPublishedContent: (token, filters = {}) => {
+    const query = new URLSearchParams(
+      Object.fromEntries(Object.entries(filters).filter(([, v]) => v))
+    ).toString();
+    return apiHandler(`/content/published${query ? `?${query}` : ""}`, {
       headers: { Authorization: `Bearer ${token}` },
-    }),
+    });
+  },
 
   getSaved: (token) =>
     apiHandler("/content/saved", {
@@ -186,6 +182,7 @@ export const contentApi = {
     }),
 };
 
+// ─── Threads ─────────────────────────────────────────────────────────────────
 export const threadApi = {
   create: (data, token) =>
     apiHandler("/thread", {
@@ -204,6 +201,7 @@ export const threadApi = {
     }),
 };
 
+// ─── Comments ────────────────────────────────────────────────────────────────
 export const commentApi = {
   create: (data, token) =>
     apiHandler("/comment", {
@@ -222,11 +220,10 @@ export const commentApi = {
     }),
 };
 
+// ─── Events ──────────────────────────────────────────────────────────────────
 export const eventApi = {
   getEvents: (token) =>
-    apiHandler("/events", {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
+    apiHandler("/events", { headers: { Authorization: `Bearer ${token}` } }),
 
   register: (id, token) =>
     apiHandler(`/events/${id}/register`, {
@@ -259,5 +256,185 @@ export const eventApi = {
       headers: { Authorization: `Bearer ${token}` },
     }),
 };
+
+// ─── Certifications / Test ────────────────────────────────────────────────────
+export const testApi = {
+  getCertifications: (token) =>
+    apiHandler("/test/certifications", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  startTest: (certId, token) =>
+    apiHandler(`/test/${certId}/start`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  submitTest: (data, token) =>
+    apiHandler("/test/submit", {
+      method: "POST",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getMyCertificates: (token) =>
+    apiHandler("/test/my-certificates", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  verifyCertificate: (verificationId) =>
+    apiHandler(`/test/certificate/${verificationId}`),
+};
+
+// ─── Admin – Certification Management ────────────────────────────────────────
+export const adminCertApi = {
+  createCertification: (data, token) =>
+    apiHandler("/admin/certification/create", {
+      method: "POST",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  addQuestion: (certId, data, token) =>
+    apiHandler(`/admin/certification/${certId}/question`, {
+      method: "POST",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getQuestionsByCert: (certId, token) =>
+    apiHandler(`/admin/certification/${certId}/questions`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  deleteQuestion: (id, token) =>
+    apiHandler(`/admin/question/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+};
+
+// ─── Domains ──────────────────────────────────────────────────────────────────
+// Fetches the centralized medical domain taxonomy from the backend.
+// Use this in every component that needs a domain dropdown.
+export const domainApi = {
+  getDomains: () => apiHandler("/domains"),
+};
+
+// ─── Courses ──────────────────────────────────────────────────────────────────
+export const courseApi = {
+  create: (data, token) =>
+    apiHandler("/courses/create", {
+      method: "POST",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getMyCourses: (token) =>
+    apiHandler("/courses/my", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getAll: (token, filters = {}) => {
+    const query = new URLSearchParams(filters).toString();
+    return apiHandler(`/courses?${query}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  getById: (id, token) =>
+    apiHandler(`/courses/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  update: (id, data, token) =>
+    apiHandler(`/courses/${id}`, {
+      method: "PUT",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  updateBasicInfo: (id, data, token) =>
+    apiHandler(`/courses/${id}/basic-info`, {
+      method: "PUT",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  submitForReview: (id, token) =>
+    apiHandler(`/courses/${id}/submit`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  approve: (id, token) =>
+    apiHandler(`/courses/${id}/approve`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  reject: (id, reason, token) =>
+    apiHandler(`/courses/${id}/reject`, {
+      method: "PUT",
+      body: { reason },
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+};
+
+// ─── Modules ──────────────────────────────────────────────────────────────────
+export const moduleApi = {
+  create: (data, token) =>
+    apiHandler("/modules/create", {
+      method: "POST",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getByCourse: (courseId, token) =>
+    apiHandler(`/modules/course/${courseId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  update: (id, data, token) =>
+    apiHandler(`/modules/${id}`, {
+      method: "PUT",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  delete: (id, token) =>
+    apiHandler(`/modules/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+};
+
+// ─── Lessons ──────────────────────────────────────────────────────────────────
+export const lessonApi = {
+  create: (data, token) =>
+    apiHandler("/lessons/create", {
+      method: "POST",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getByModule: (moduleId, token) =>
+    apiHandler(`/lessons/module/${moduleId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  update: (id, data, token) =>
+    apiHandler(`/lessons/${id}`, {
+      method: "PUT",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  delete: (id, token) =>
+    apiHandler(`/lessons/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+};
+
 
 export default apiHandler;

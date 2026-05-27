@@ -1,22 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import "../dashboard.css";
 import useStore from "../../../store/useStore";
-import { adminApi, eventApi } from "../../../api/api";
+import { adminApi, eventApi, courseApi, moduleApi, lessonApi } from "../../../api/api";
 import VideoPlayer from "../../../components/VideoPlayer";
+import AdminCertificationsPanel from "./AdminCertificationsPanel";
 
 export default function AdminDashboard() {
    const { user, logout, token } = useStore();
-   const [activeTab, setActiveTab] = useState("overview");
+   const [searchParams, setSearchParams] = useSearchParams();
+   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
+
+   useEffect(() => {
+      setSearchParams({ tab: activeTab });
+   }, [activeTab]);
    const [users, setUsers] = useState([]);
    const [userMeta, setUserMeta] = useState({ pages: 1, current: 1 });
    const [filters, setFilters] = useState({ name: "", role: "" });
    const [loading, setLoading] = useState(false);
    const [pendingContent, setPendingContent] = useState([]);
+   const [contentFilter, setContentFilter] = useState("pending");
    const [expandedItem, setExpandedItem] = useState(null);
     const [roleChanges, setRoleChanges] = useState({});
     const [rejectionReasons, setRejectionReasons] = useState({});
     const [showRejectInput, setShowRejectInput] = useState(null);
+    const [pendingCourses, setPendingCourses] = useState([]);
+    const [courseFilter, setCourseFilter] = useState("pending");
+    const [showCourseRejectInput, setShowCourseRejectInput] = useState(null);
+    const [courseRejectionReasons, setCourseRejectionReasons] = useState({});
+    const [inspectingCourse, setInspectingCourse] = useState(null);
+    const [inspectionData, setInspectionData] = useState({ modules: [], lessons: {} });
+    const [inspectingLoading, setInspectingLoading] = useState(false);
 
    // Event Management State
    const [events, setEvents] = useState([]);
@@ -78,14 +92,21 @@ export default function AdminDashboard() {
       { id: "overview", label: "System Overview", icon: "📊" },
       { id: "users", label: "Manage People", icon: "👥" },
       { id: "content", label: "Content Moderation", icon: "📄" },
+      { id: "courses", label: "Course Moderation", icon: "📚" },
       { id: "events", label: "Platform Events", icon: "📅" },
+      { id: "certifications", label: "Certifications", icon: "🎓" },
       { id: "settings", label: "System Settings", icon: "⚙️" },
    ];
 
-   const fetchContent = async () => {
+   const fetchContent = async (status = contentFilter) => {
       setLoading(true);
       try {
-         const data = await adminApi.getPendingContent(token);
+         let data;
+         if (status === "pending") {
+            data = await adminApi.getPendingContent(token);
+         } else {
+            data = await adminApi.getAllContent(token, status === "all" ? "" : status);
+         }
          setPendingContent(data);
       } catch (err) {
          console.error(err);
@@ -119,6 +140,50 @@ export default function AdminDashboard() {
          fetchContent();
       } catch (err) {
          alert(err.message);
+      }
+   };
+
+   const fetchCourses = async (status = courseFilter) => {
+      setLoading(true);
+      try {
+         const data = await courseApi.getAll(token, { status: status === "all" ? "" : status });
+         setPendingCourses(data);
+      } catch (err) {
+         console.error(err);
+      } finally {
+         setLoading(false);
+      }
+   };
+   const handleCourseAction = async (id, action) => {
+      try {
+         if (action === "approve") {
+            await courseApi.approve(id, token);
+         } else {
+            const reason = courseRejectionReasons[id] || "Changes requested by Admin";
+            await courseApi.reject(id, reason, token);
+            setShowCourseRejectInput(null);
+         }
+         fetchCourses();
+      } catch (err) {
+         alert(err.message);
+      }
+   };
+
+   const handleInspectCourse = async (course) => {
+      setInspectingCourse(course);
+      setInspectingLoading(true);
+      try {
+         const modulesData = await moduleApi.getByCourse(course._id, token);
+         const lessonsData = {};
+         for (const mod of modulesData) {
+            const modLessons = await lessonApi.getByModule(mod._id, token);
+            lessonsData[mod._id] = modLessons;
+         }
+         setInspectionData({ modules: modulesData, lessons: lessonsData });
+      } catch (err) {
+         console.error("Failed to fetch curriculum:", err);
+      } finally {
+         setInspectingLoading(false);
       }
    };
 
@@ -190,9 +255,18 @@ export default function AdminDashboard() {
 
    useEffect(() => {
       if (activeTab === "users") fetchUsers(1);
-      if (activeTab === "content") fetchContent();
+      if (activeTab === "content") fetchContent(contentFilter);
+      if (activeTab === "courses") fetchCourses(courseFilter);
       if (activeTab === "events") fetchAdminEvents();
    }, [activeTab, filters.role, token]);
+
+   useEffect(() => {
+      if (activeTab === "content") fetchContent(contentFilter);
+   }, [contentFilter]);
+
+   useEffect(() => {
+      if (activeTab === "courses") fetchCourses(courseFilter);
+   }, [courseFilter]);
 
    return (
       <div className="dashboard-layout">
@@ -517,11 +591,26 @@ export default function AdminDashboard() {
 
                {activeTab === "content" && (
                   <div className="space-y-6">
+                     {/* Status filter tabs */}
+                     <div className="flex gap-2 p-1 bg-surface-50 rounded-2xl border border-surface-100 w-fit">
+                        {["pending", "approved", "rejected", "all"].map(s => (
+                           <button
+                              key={s}
+                              onClick={() => setContentFilter(s)}
+                              className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                 contentFilter === s ? "bg-surface-900 text-white shadow" : "text-surface-400 hover:text-surface-900"
+                              }`}
+                           >
+                              {s === "all" ? "All Content" : s === "approved" ? "✓ Approved" : s === "rejected" ? "✕ Rejected" : "⏳ Pending"}
+                           </button>
+                        ))}
+                     </div>
+
                      {loading ? (
                         <div className="p-20 text-center animate-pulse"><p className="text-surface-400 font-black uppercase tracking-widest">Scanning submission queue...</p></div>
                      ) : pendingContent.length === 0 ? (
                         <div className="p-20 bg-surface-50 rounded-[3rem] border border-dashed border-surface-200 text-center">
-                           <p className="text-surface-400 font-black uppercase tracking-widest">Queue Clear. No content pending moderation.</p>
+                           <p className="text-surface-400 font-black uppercase tracking-widest">Queue Clear. No content in this category.</p>
                         </div>
                      ) : (
                         pendingContent.map((item) => (
@@ -529,10 +618,23 @@ export default function AdminDashboard() {
                               <div className="flex justify-between items-start mb-6">
                                  <div>
                                     <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter">{item.title}</h3>
-                                    <p className="text-xs text-primary-600 font-bold uppercase tracking-widest mt-1">Submitted by {item.user?.name}</p>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                       <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-0.5 rounded">By {item.user?.name}</span>
+                                       {item.domain && <span className="text-[9px] font-black text-surface-500 uppercase tracking-widest bg-surface-100 px-2 py-0.5 rounded">{item.domain}</span>}
+                                       <span className="text-[9px] font-black text-surface-400 uppercase tracking-widest bg-surface-50 px-2 py-0.5 rounded">{item.type}</span>
+                                    </div>
                                  </div>
-                                 <span className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black uppercase rounded-full tracking-widest">Pending Review</span>
+                                 <span className={`px-3 py-1 text-[10px] font-black uppercase rounded-full tracking-widest ${
+                                    item.status === "approved" ? "bg-green-50 text-green-600" :
+                                    item.status === "rejected" ? "bg-red-50 text-red-500" : "bg-amber-50 text-amber-600"
+                                 }`}>
+                                    {item.status === "approved" ? "✓ Published" : item.status === "rejected" ? "✕ Rejected" : "⏳ Pending Review"}
+                                 </span>
                               </div>
+
+                              {item.description && (
+                                 <p className="text-sm text-surface-500 font-medium mb-4 italic">{item.description}</p>
+                              )}
 
                               <div
                                  onClick={() => setExpandedItem(expandedItem === item._id ? null : item._id)}
@@ -562,61 +664,243 @@ export default function AdminDashboard() {
 
                                  {expandedItem !== item._id && (
                                     <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-surface-50 to-transparent flex items-end justify-center pb-4">
-                                       <span className="text-[10px] font-black uppercase tracking-widest text-primary-600">Click to Review Article & Media Details</span>
+                                       <span className="text-[10px] font-black uppercase tracking-widest text-primary-600">Click to Review Full Details</span>
                                     </div>
                                  )}
                               </div>
 
-                              {showRejectInput === item._id ? (
-                                 <div className="mb-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
-                                    <textarea
-                                       placeholder="Type instructions for the contributor (Optional)..."
-                                       className="w-full p-4 rounded-2xl border-2 border-amber-100 bg-amber-50/30 text-sm font-bold text-surface-900 outline-none focus:border-amber-200 h-24 resize-none"
-                                       value={rejectionReasons[item._id] || ""}
-                                       onChange={(e) => setRejectionReasons({ ...rejectionReasons, [item._id]: e.target.value })}
-                                    />
-                                    <div className="flex gap-2">
-                                       <button
-                                          onClick={() => handleContentAction(item._id, "reject")}
-                                          className="px-6 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20"
-                                       >
-                                          Send Instructions
+                              {item.status === "rejected" && item.rejectionReason && (
+                                 <div className="mb-6 p-4 bg-red-50 rounded-2xl border-l-4 border-red-400">
+                                    <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">Rejection Reason</p>
+                                    <p className="text-xs text-red-500 font-medium italic">&ldquo;{item.rejectionReason}&rdquo;</p>
+                                 </div>
+                              )}
+
+                              {item.status === "pending" && (
+                                 showRejectInput === item._id ? (
+                                    <div className="mb-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                       <textarea
+                                          placeholder="Type instructions for the contributor (Optional)..."
+                                          className="w-full p-4 rounded-2xl border-2 border-amber-100 bg-amber-50/30 text-sm font-bold text-surface-900 outline-none focus:border-amber-200 h-24 resize-none"
+                                          value={rejectionReasons[item._id] || ""}
+                                          onChange={(e) => setRejectionReasons({ ...rejectionReasons, [item._id]: e.target.value })}
+                                       />
+                                       <div className="flex gap-2">
+                                          <button onClick={() => handleContentAction(item._id, "reject")} className="px-6 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20">
+                                             Send Instructions
+                                          </button>
+                                          <button onClick={() => setShowRejectInput(null)} className="px-6 py-2 text-surface-400 text-[10px] font-black uppercase tracking-widest">
+                                             Cancel
+                                          </button>
+                                       </div>
+                                    </div>
+                                 ) : (
+                                    <div className="flex flex-wrap gap-4">
+                                       <button onClick={() => handleContentAction(item._id, "approve")} className="px-8 py-3 bg-primary-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
+                                          Publish Content
                                        </button>
-                                       <button
-                                          onClick={() => setShowRejectInput(null)}
-                                          className="px-6 py-2 text-surface-400 text-[10px] font-black uppercase tracking-widest"
-                                       >
-                                          Cancel
+                                       <button onClick={() => setShowRejectInput(item._id)} className="px-8 py-3 border-2 border-amber-100 text-amber-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-50 transition-all">
+                                          Request Changes
+                                       </button>
+                                       <button onClick={() => handleDeleteContent(item._id)} className="px-8 py-3 border-2 border-red-100 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all ml-auto">
+                                          Delete
                                        </button>
                                     </div>
-                                 </div>
-                              ) : (
-                                 <div className="flex flex-wrap gap-4">
-                                    <button
-                                       onClick={() => handleContentAction(item._id, "approve")}
-                                       className="px-8 py-3 bg-primary-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
-                                    >
-                                       Publish Content
-                                    </button>
-                                    <button
-                                       onClick={() => setShowRejectInput(item._id)}
-                                       className="px-8 py-3 border-2 border-amber-100 text-amber-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-50 transition-all"
-                                    >
-                                       Request Changes
-                                    </button>
-                                    <button
-                                       onClick={() => handleDeleteContent(item._id)}
-                                       className="px-8 py-3 border-2 border-red-100 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all ml-auto"
-                                    >
+                                 )
+                              )}
+                              {item.status !== "pending" && (
+                                 <div className="flex gap-4">
+                                    <button onClick={() => handleDeleteContent(item._id)} className="px-8 py-3 border-2 border-red-100 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all">
                                        Delete
                                     </button>
-                                  </div>
-                               )}
-                            </div>
-                         ))
-                      )}
-                   </div>
-                )}
+                                 </div>
+                              )}
+                           </div>
+                        ))
+                     )}
+                  </div>
+               )}
+
+               {activeTab === "courses" && (
+                  <div className="space-y-6">
+                     {inspectingCourse ? (
+                        <div className="animate-in fade-in slide-in-from-right-6 duration-500">
+                           <button 
+                              onClick={() => setInspectingCourse(null)}
+                              className="mb-8 px-6 py-2 bg-surface-50 text-surface-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-surface-900 hover:text-white transition-all shadow-sm"
+                           >
+                              ← Back to Course Queue
+                           </button>
+
+                           <div className="bg-white rounded-[3.5rem] border border-surface-100 shadow-2xl p-12">
+                              <header className="mb-12 border-b border-surface-50 pb-12">
+                                 <div className="flex gap-4 mb-4">
+                                    <span className="px-3 py-1 bg-primary-100 text-primary-600 text-[10px] font-black uppercase rounded-full tracking-widest">{inspectingCourse.domain}</span>
+                                    <span className="px-3 py-1 bg-surface-50 text-surface-400 text-[10px] font-black uppercase rounded-full tracking-widest italic">{inspectingCourse.pricingType} Access</span>
+                                 </div>
+                                 <h2 className="text-4xl font-black text-surface-900 uppercase tracking-tighter leading-none">{inspectingCourse.title}</h2>
+                                 <p className="text-surface-400 font-medium mt-4 max-w-3xl leading-relaxed italic">"{inspectingCourse.description}"</p>
+                              </header>
+
+                              {inspectingLoading ? (
+                                 <div className="p-20 text-center animate-pulse">
+                                    <div className="w-16 h-16 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mx-auto mb-6" />
+                                    <p className="text-surface-400 uppercase font-black text-xs tracking-widest">Compiling Curriculum Map...</p>
+                                 </div>
+                              ) : (
+                                 <div className="space-y-10">
+                                    {inspectionData.modules.length === 0 ? (
+                                       <div className="p-20 bg-surface-50 rounded-[4rem] border-2 border-dashed border-surface-200 text-center">
+                                          <p className="text-surface-300 font-black uppercase tracking-widest text-xs">No Curriculum Found</p>
+                                          <p className="text-[10px] text-surface-400 font-medium mt-2">This course has no modules or lessons yet.</p>
+                                       </div>
+                                    ) : (
+                                       inspectionData.modules.map((mod, idx) => (
+                                          <div key={mod._id} className="bg-surface-50 rounded-[2.5rem] overflow-hidden border border-surface-100">
+                                             <div className="p-8 flex items-center justify-between border-b border-white">
+                                                <div className="flex items-center gap-4">
+                                                   <div className="w-10 h-10 rounded-full bg-surface-900 text-white flex items-center justify-center font-black text-sm">{idx + 1}</div>
+                                                   <div>
+                                                      <h4 className="text-lg font-black text-surface-900 uppercase tracking-tighter">{mod.title}</h4>
+                                                      <p className="text-[10px] text-surface-400 font-bold uppercase tracking-widest">{mod.description}</p>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                             <div className="p-8 space-y-4">
+                                                {inspectionData.lessons[mod._id]?.length === 0 ? (
+                                                   <p className="text-[10px] text-surface-300 font-black uppercase tracking-widest italic pl-14">Empty Module</p>
+                                                ) : (
+                                                   inspectionData.lessons[mod._id]?.map((lesson, lIdx) => (
+                                                      <div key={lesson._id} className="group p-6 bg-white rounded-3xl border border-surface-100 flex items-center justify-between">
+                                                         <div className="flex items-center gap-6">
+                                                            <span className="text-[10px] font-black text-surface-300">0{lIdx + 1}</span>
+                                                            <div>
+                                                               <div className="flex items-center gap-3">
+                                                                  {lesson.videoUrl && <span className="text-primary-600">📹</span>}
+                                                                  <h5 className="text-sm font-black text-surface-900 uppercase tracking-tight">{lesson.title}</h5>
+                                                               </div>
+                                                               <p className="text-[9px] text-surface-400 font-medium mt-0.5">{lesson.description}</p>
+                                                            </div>
+                                                         </div>
+                                                         {lesson.videoUrl && (
+                                                            <button 
+                                                               onClick={() => window.open(lesson.videoUrl, "_blank")}
+                                                               className="px-4 py-2 bg-surface-50 text-[9px] font-black uppercase text-surface-400 rounded-lg hover:bg-primary-50 hover:text-primary-600"
+                                                            >
+                                                               Preview Video
+                                                            </button>
+                                                         )}
+                                                      </div>
+                                                   ))
+                                                )}
+                                             </div>
+                                          </div>
+                                       ))
+                                    )}
+                                 </div>
+                              )}
+                           </div>
+                        </div>
+                     ) : (
+                        <>
+                           <div className="flex gap-2 p-1 bg-surface-50 rounded-2xl border border-surface-100 w-fit">
+                              {["pending", "approved", "rejected", "all"].map(s => (
+                                 <button
+                                    key={s}
+                                    onClick={() => setCourseFilter(s)}
+                                    className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                       courseFilter === s ? "bg-surface-900 text-white shadow" : "text-surface-400 hover:text-surface-900"
+                                    }`}
+                                 >
+                                    {s === "all" ? "All Courses" : s === "approved" ? "✓ Approved" : s === "rejected" ? "✕ Rejected" : "⏳ Pending"}
+                                 </button>
+                              ))}
+                           </div>
+
+                           {loading ? (
+                              <div className="p-20 text-center animate-pulse"><p className="text-surface-400 font-black uppercase tracking-widest">Scanning course catalog...</p></div>
+                           ) : pendingCourses.length === 0 ? (
+                              <div className="p-20 bg-surface-50 rounded-[3rem] border border-dashed border-surface-200 text-center">
+                                 <p className="text-surface-400 font-black uppercase tracking-widest">No courses found in this category.</p>
+                              </div>
+                           ) : (
+                              pendingCourses.map((item) => (
+                                 <div key={item._id} className="p-8 bg-white rounded-[3rem] border border-surface-100 shadow-sm transition-all group hover:shadow-2xl overflow-hidden mt-6">
+                                    <div className="flex justify-between items-start mb-6">
+                                       <div className="flex items-center gap-6">
+                                          <div className="w-20 h-20 rounded-2xl overflow-hidden bg-surface-50 shadow-lg">
+                                             <img src={item.thumbnail || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200"} className="w-full h-full object-cover" alt="" />
+                                          </div>
+                                          <div>
+                                             <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter">{item.title}</h3>
+                                             <div className="flex flex-wrap gap-2 mt-2">
+                                                <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest bg-primary-50 px-2 py-0.5 rounded">Instructor: {item.createdBy?.name}</span>
+                                                <span className="text-[9px] font-black text-surface-500 uppercase tracking-widest bg-surface-100 px-2 py-0.5 rounded">{item.domain}</span>
+                                                <span className="text-[9px] font-black text-surface-400 uppercase tracking-widest bg-surface-50 px-2 py-0.5 rounded">{item.pricingType} {item.price > 0 ? `(₹${item.price})` : ""}</span>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <span className={`px-3 py-1 text-[10px] font-black uppercase rounded-full tracking-widest ${
+                                          item.status === "approved" ? "bg-green-50 text-green-600" :
+                                          item.status === "rejected" ? "bg-red-50 text-red-500" : "bg-amber-50 text-amber-600"
+                                       }`}>
+                                          {item.status}
+                                       </span>
+                                    </div>
+
+                                    <p className="text-sm text-surface-500 font-medium mb-8 leading-relaxed line-clamp-3 italic">
+                                       "{item.description}"
+                                    </p>
+
+                                    {item.status === "rejected" && item.rejectionReason && (
+                                       <div className="mb-6 p-4 bg-red-50 rounded-2xl border-l-4 border-red-400">
+                                          <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">Rejection Reason</p>
+                                          <p className="text-xs text-red-500 font-medium italic">&ldquo;{item.rejectionReason}&rdquo;</p>
+                                       </div>
+                                    )}
+
+                                    {item.status === "pending" && (
+                                       showCourseRejectInput === item._id ? (
+                                          <div className="mb-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                                             <textarea
+                                                placeholder="Explain what the instructor needs to fix..."
+                                                className="w-full p-4 rounded-2xl border-2 border-red-100 bg-red-50/10 text-sm font-bold text-surface-900 outline-none focus:border-red-200 h-24 resize-none"
+                                                value={courseRejectionReasons[item._id] || ""}
+                                                onChange={(e) => setCourseRejectionReasons({ ...courseRejectionReasons, [item._id]: e.target.value })}
+                                             />
+                                             <div className="flex gap-2">
+                                                <button onClick={() => handleCourseAction(item._id, "reject")} className="px-6 py-2 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-500/20">
+                                                   Send Feedback
+                                                </button>
+                                                <button onClick={() => setShowCourseRejectInput(null)} className="px-6 py-2 text-surface-400 text-[10px] font-black uppercase tracking-widest">
+                                                   Go Back
+                                                </button>
+                                             </div>
+                                          </div>
+                                       ) : (
+                                          <div className="flex flex-wrap gap-4">
+                                             <button onClick={() => handleCourseAction(item._id, "approve")} className="px-8 py-3 bg-primary-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
+                                                Approve & Publish
+                                             </button>
+                                             <button onClick={() => setShowCourseRejectInput(item._id)} className="px-8 py-3 border-2 border-red-100 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all">
+                                                Reject with Feedback
+                                             </button>
+                                             <button 
+                                                onClick={() => handleInspectCourse(item)} 
+                                                className="px-8 py-3 bg-surface-50 text-surface-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-surface-100 transition-all ml-auto"
+                                             >
+                                                Inspect Curriculum 🔍
+                                             </button>
+                                          </div>
+                                       )
+                                    )}
+                                 </div>
+                              ))
+                           )}
+                        </>
+                     )}
+                  </div>
+               )}
 
                {activeTab === "events" && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
@@ -697,7 +981,11 @@ export default function AdminDashboard() {
                   </div>
                )}
 
-               {activeTab !== "overview" && activeTab !== "users" && activeTab !== "content" && activeTab !== "events" && (
+               {activeTab === "certifications" && (
+                  <AdminCertificationsPanel />
+               )}
+
+               {activeTab !== "overview" && activeTab !== "users" && activeTab !== "content" && activeTab !== "events" && activeTab !== "certifications" && (
                   <div className="p-20 bg-surface-50 rounded-[3rem] border border-dashed border-surface-200 text-center">
                      <p className="text-surface-400 font-bold uppercase tracking-widest italic text-xs">Section under active development.</p>
                   </div>

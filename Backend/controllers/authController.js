@@ -62,6 +62,9 @@ export const signupUser = async (req, res) => {
         role: user.role,
         status: user.status,
         isContributor: user.isContributor,
+        expertise: user.expertise,
+        expertiseLevel: user.expertiseLevel,
+        proofUrl: user.proofUrl,
       },
       message: isContributor
         ? "Contributor registration submitted. Await admin approval."
@@ -120,6 +123,9 @@ export const loginUser = async (req, res) => {
         role: user.role,
         status: user.status,
         isContributor: user.isContributor,
+        expertise: user.expertise,
+        expertiseLevel: user.expertiseLevel,
+        proofUrl: user.proofUrl,
       },
     });
 

@@ -5,26 +5,36 @@ const ContentSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
+      minlength: 5,
     },
 
-    description: String,
+    description: {
+      type: String,
+      required: true,
+      minlength: 20,
+    },
+
     thumbnail: String,
     videoUrl: String,
 
     content: {
-      type: String, // markdown / HTML / video URL
-      required: true,
+      type: String, // JSON blocks for articles, or empty for video-only
     },
 
     type: {
       type: String,
-      enum: ["article", "video", "course"],
-      default: "article",
+      enum: ["article", "video"],
+      required: true,
+    },
+
+    domain: {
+      type: String,
+      required: true,
     },
 
     tags: [String],
 
-    // renamed from "speaker" → "user" to reflect new role system
+    // Primary author reference — "user" kept for backward compat
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -33,16 +43,19 @@ const ContentSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "published", "rejected"],
+      enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
 
-    approvedBy: {
+    rejectionReason: String,
+
+    // Admin who reviewed
+    reviewedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
 
-    rejectionReason: String,
+    reviewedAt: Date,
 
     views: {
       type: Number,
