@@ -19,6 +19,8 @@ import ContributorCoursesPage from "./pages/dashboards/contributor/ContributorCo
 import CreateCoursePage from "./pages/dashboards/contributor/CreateCoursePage";
 import CourseBuilderPage from "./pages/dashboards/contributor/CourseBuilderPage";
 import UserDashboard from "./pages/dashboards/user/UserDashboard";
+import CourseDetailPage from "./pages/CourseDetailPage";
+import CheckoutPage from "./pages/CheckoutPage";
 
 import RegisterCertificationPage from "./pages/RegisterCertificationPage";
 import CommunityNarrativePage from "./pages/CommunityNarrativePage";
@@ -215,6 +217,8 @@ export default function App() {
         <Route path="/dashboard/contributor/courses/create" element={<ProtectedRoute><ContributorDashboard><CreateCoursePage /></ContributorDashboard></ProtectedRoute>} />
         <Route path="/dashboard/contributor/courses/:courseId" element={<ProtectedRoute><ContributorDashboard><CourseBuilderPage /></ContributorDashboard></ProtectedRoute>} />
         <Route path="/dashboard/user" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+        <Route path="/courses/:courseId" element={<ProtectedRoute><AppLayout><CourseDetailPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/checkout/:courseId" element={<ProtectedRoute><AppLayout><CheckoutPage /></AppLayout></ProtectedRoute>} />
 
         <Route path="/register-certification" element={<AppLayout><RegisterCertificationPage /></AppLayout>} />
         <Route path="/join" element={<AppLayout><JoinChampPage /></AppLayout>} />

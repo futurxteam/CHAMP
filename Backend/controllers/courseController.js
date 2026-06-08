@@ -65,6 +65,99 @@ export const getAllCourses = async (req, res) => {
     }
 };
 
+export const getPaidCourseCatalog = async (req, res) => {
+    try {
+        const { domain, search, maxPrice } = req.query;
+        
+        const query = {
+            status: "approved",
+            pricingType: "paid"
+        };
+        
+        if (domain) {
+            query.domain = domain;
+        }
+        
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } }
+            ];
+        }
+        
+        if (maxPrice) {
+            const parsedPrice = parseFloat(maxPrice);
+            if (!isNaN(parsedPrice)) {
+                query.price = { $lte: parsedPrice };
+            }
+        }
+        
+        const courses = await Course.find(query)
+            .populate("createdBy", "name")
+            .sort({ createdAt: -1 })
+            .lean();
+            
+        const courseIds = courses.map(c => c._id);
+        
+        // Fetch all modules for these courses
+        const modules = await Module.find({ course: { $in: courseIds } })
+            .select("_id course")
+            .lean();
+            
+        const moduleIds = modules.map(m => m._id);
+        
+        // Fetch all lessons for these modules
+        const lessons = await Lesson.find({ module: { $in: moduleIds } })
+            .select("_id module")
+            .lean();
+            
+        // Map course to its modules
+        const courseToModules = {};
+        modules.forEach(m => {
+            const cid = m.course.toString();
+            if (!courseToModules[cid]) {
+                courseToModules[cid] = [];
+            }
+            courseToModules[cid].push(m._id.toString());
+        });
+        
+        // Map module to its lesson count
+        const moduleToLessonsCount = {};
+        lessons.forEach(l => {
+            const mid = l.module.toString();
+            moduleToLessonsCount[mid] = (moduleToLessonsCount[mid] || 0) + 1;
+        });
+        
+        // Assemble catalog cards
+        const catalog = courses.map(course => {
+            const cModules = courseToModules[course._id.toString()] || [];
+            const totalModules = cModules.length;
+            let totalLessons = 0;
+            cModules.forEach(mid => {
+                totalLessons += (moduleToLessonsCount[mid] || 0);
+            });
+            
+            return {
+                _id: course._id,
+                id: course._id,
+                title: course.title,
+                description: course.description,
+                thumbnail: course.thumbnail,
+                domain: course.domain,
+                price: course.price,
+                instructor: course.createdBy ? course.createdBy.name : "Unknown",
+                totalModules,
+                totalLessons,
+                createdAt: course.createdAt
+            };
+        });
+        
+        res.json(catalog);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 export const getCourseById = async (req, res) => {
     try {
         const course = await Course.findById(req.params.id).populate("createdBy", "name");

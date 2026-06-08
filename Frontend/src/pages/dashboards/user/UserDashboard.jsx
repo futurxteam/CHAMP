@@ -34,6 +34,12 @@ export default function UserDashboard() {
       type: ""
    });
 
+  const [catalogFilters, setCatalogFilters] = useState({
+      search: "",
+      domain: "",
+      maxPrice: ""
+   });
+
    const [domains, setDomains] = useState([]);
 
    const fetchDomains = async () => {
@@ -113,7 +119,7 @@ export default function UserDashboard() {
   const fetchCourses = async () => {
     setCourseLoading(true);
     try {
-      const data = await courseApi.getAll(token);
+      const data = await courseApi.getCatalog(token, catalogFilters);
       setCourses(data);
     } catch (err) {
       console.error(err);
@@ -184,7 +190,7 @@ export default function UserDashboard() {
       if (activeTab === "certs") fetchCertificates();
       if (activeTab === "test") fetchAvailableCerts();
       if (activeTab === "learning") fetchCourses();
-   }, [activeTab, filters.domain, filters.type, token]);
+   }, [activeTab, filters.domain, filters.type, catalogFilters.domain, catalogFilters.maxPrice, token]);
 
    const checkActive = (array) => {
       if (!array || !user) return false;
@@ -618,24 +624,66 @@ export default function UserDashboard() {
                  )}
 
                  {activeTab === "learning" && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
                         <div className="flex items-center justify-between mb-8">
                            <h2 className="text-2xl font-black text-surface-900 uppercase tracking-tighter">Academic Course Catalog</h2>
                            <span className="px-4 py-2 bg-primary-50 text-primary-600 text-[10px] font-black uppercase rounded-full tracking-widest">Formal Learning Tracks</span>
                         </div>
 
+                        {/* Catalog Filters Bar */}
+                        <div className="flex flex-col md:flex-row gap-4 p-6 bg-white rounded-[2.5rem] border border-surface-100 shadow-sm">
+                           <div className="flex-1 relative">
+                              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-surface-300">🔍</span>
+                              <input 
+                                 type="text" 
+                                 placeholder="Search approved paid courses..."
+                                 className="w-full pl-12 pr-6 py-3 bg-surface-50 rounded-2xl border-none outline-none font-bold text-surface-900 placeholder:text-surface-300 transition-all focus:bg-white focus:ring-2 focus:ring-primary-100"
+                                 value={catalogFilters.search}
+                                 onChange={(e) => setCatalogFilters({...catalogFilters, search: e.target.value})}
+                                 onKeyDown={(e) => e.key === "Enter" && fetchCourses()}
+                              />
+                           </div>
+                           <div className="flex gap-4">
+                              <select 
+                                 className="px-6 py-3 bg-surface-50 rounded-2xl border-none outline-none font-black uppercase text-[10px] tracking-widest text-surface-400 cursor-pointer hover:bg-surface-100 transition-all"
+                                 value={catalogFilters.domain}
+                                 onChange={(e) => setCatalogFilters({...catalogFilters, domain: e.target.value})}
+                              >
+                                 <option value="">All Domains</option>
+                                 {domains.map(d => <option key={d} value={d}>{d}</option>)}
+                              </select>
+                              <select 
+                                 className="px-6 py-3 bg-surface-50 rounded-2xl border-none outline-none font-black uppercase text-[10px] tracking-widest text-surface-400 cursor-pointer hover:bg-surface-100 transition-all"
+                                 value={catalogFilters.maxPrice}
+                                 onChange={(e) => setCatalogFilters({...catalogFilters, maxPrice: e.target.value})}
+                              >
+                                 <option value="">All Prices</option>
+                                 <option value="1000">Under ₹1,000</option>
+                                 <option value="5000">Under ₹5,000</option>
+                                 <option value="10000">Under ₹10,000</option>
+                                 <option value="25000">Under ₹25,000</option>
+                              </select>
+                              <button 
+                                 onClick={fetchCourses}
+                                 className="px-8 py-3 bg-surface-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all active:scale-95 shadow-lg shadow-surface-900/20"
+                              >
+                                 Apply
+                              </button>
+                           </div>
+                        </div>
+
                         {courseLoading ? (
-                           <div className="p-20 text-center">
-                              <div className="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mx-auto mb-4" />
-                              <p className="text-surface-400 uppercase font-black text-[10px] tracking-widest">Opening Curriculum Library...</p>
+                           <div className="p-20 text-center animate-pulse">
+                              <div className="w-16 h-16 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mx-auto mb-6" />
+                              <p className="text-surface-400 uppercase font-black text-xs tracking-widest">Opening Curriculum Library...</p>
                            </div>
                         ) : courses.length > 0 ? (
                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                               {courses.map(course => (
                                  <div 
                                     key={course._id}
-                                    className="p-6 bg-white rounded-[3rem] border border-surface-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group flex flex-col"
-                                    onClick={() => navigate(`/course/${course._id}`)}
+                                    className="p-6 bg-white rounded-[3rem] border border-surface-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group flex flex-col animate-in fade-in duration-500"
+                                    onClick={() => navigate(`/courses/${course._id}`)}
                                  >
                                     <div className="aspect-video rounded-[2rem] overflow-hidden mb-6 relative shadow-lg">
                                        <img 
@@ -643,23 +691,48 @@ export default function UserDashboard() {
                                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                                           alt="" 
                                        />
-                                       <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-[9px] font-black uppercase tracking-widest">{course.pricingType}</div>
+                                       <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">★ Premium</div>
                                     </div>
                                     <div className="flex flex-col flex-1">
                                        <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest mb-2">{course.domain}</span>
                                        <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter line-clamp-2 leading-none group-hover:text-primary-600 transition-colors mb-4">{course.title}</h3>
                                        
-                                       <div className="mt-auto pt-6 border-t border-surface-50 flex items-center justify-between">
-                                          <div className="flex flex-col">
-                                             <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Instructor</span>
-                                             <span className="text-[10px] font-black text-surface-600">{course.createdBy?.name}</span>
+                                       <p className="text-xs text-surface-500 font-medium line-clamp-3 leading-relaxed mb-6">
+                                          {course.description}
+                                       </p>
+
+                                       <div className="mt-auto pt-6 border-t border-surface-50">
+                                          <div className="flex items-center justify-between mb-4 text-xs font-bold text-surface-500">
+                                             <div className="flex items-center gap-1">
+                                                <span>📚</span> {course.totalModules || 0} Modules
+                                             </div>
+                                             <div className="flex items-center gap-1">
+                                                <span>📝</span> {course.totalLessons || 0} Lessons
+                                             </div>
                                           </div>
-                                          <div className="flex flex-col text-right">
-                                             <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Enrolment Fee</span>
-                                             <span className="text-sm font-black text-primary-600">
-                                                {course.price > 0 ? `₹${course.price}` : "Scholarship Access"}
-                                             </span>
+                                          
+                                          <div className="flex justify-between items-center">
+                                             <div className="flex flex-col">
+                                                <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Instructor</span>
+                                                <span className="text-[10px] font-black text-surface-600">{course.instructor || "CHAMP Faculty"}</span>
+                                             </div>
+                                             <div className="flex flex-col text-right">
+                                                <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Enrolment Fee</span>
+                                                <span className="text-sm font-black text-primary-600">
+                                                   ₹{course.price?.toLocaleString()}
+                                                </span>
+                                             </div>
                                           </div>
+
+                                          <button 
+                                             onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/courses/${course._id}`);
+                                             }}
+                                             className="w-full mt-6 py-3.5 bg-surface-50 text-surface-700 group-hover:bg-surface-900 group-hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-center"
+                                          >
+                                             View Course
+                                          </button>
                                        </div>
                                     </div>
                                  </div>
@@ -668,11 +741,11 @@ export default function UserDashboard() {
                         ) : (
                            <div className="p-20 bg-surface-50 rounded-[4rem] border-2 border-dashed border-surface-200 text-center">
                               <span className="text-6xl mb-6 block">📚</span>
-                              <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">New tracks are being curated</h3>
+                              <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">New learning tracks are being curated.</h3>
                               <p className="text-surface-400 font-medium mt-2">Check back soon for specialized healthcare certification programs.</p>
                            </div>
                         )}
-                    </div>
+                     </div>
                  )}
 
                  {activeTab === "test" && (

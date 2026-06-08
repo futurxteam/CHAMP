@@ -4,6 +4,7 @@ import Question from "../models/Question.js";
 import Attempt from "../models/Attempt.js";
 import Certificate from "../models/Certificate.js";
 import Content from "../models/Content.js";
+import Course from "../models/Course.js";
 import generateCertificate from "../utils/generateCertificate.js";
 import cloudinary from "../utils/cloudinary.js";
 
@@ -139,24 +140,34 @@ export const submitTest = async (req, res) => {
             }
         }
 
-        let recommendations = [];
-        if (!passed) {
-            recommendations = await Content.find({
-                domain: cert.domain,
-                status: "approved",
-            }).limit(5).select("title thumbnail domain type");
+        if (passed) {
+            return res.json({
+                score,
+                passed,
+                correct,
+                total,
+                certTitle: cert.title,
+                passingScore: cert.passingScore,
+                certificate,
+                recommendations: [],
+                attemptId: attempt._id,
+            });
         }
 
-        res.json({
+        const recommendations = await Course.find({
+            domain: cert.domain,
+            pricingType: "free",
+            status: "approved",
+        })
+        .populate("createdBy", "name")
+        .sort({ createdAt: -1 })
+        .limit(6);
+
+        return res.json({
             score,
-            passed,
-            correct,
-            total,
-            certTitle: cert.title,
-            passingScore: cert.passingScore,
-            certificate,
+            passed: false,
+            certificationDomain: cert.domain,
             recommendations,
-            attemptId: attempt._id,
         });
     } catch (err) {
         res.status(500).json({ message: err.message });

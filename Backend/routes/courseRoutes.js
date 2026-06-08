@@ -3,6 +3,7 @@ import {
     createCourse,
     getMyCourses,
     getAllCourses,
+    getPaidCourseCatalog,
     getCourseById,
     updateCourse,
     updateCourseBasicInfo,
@@ -18,6 +19,7 @@ const router = express.Router();
 router.post("/create", protect, contributorOnly, upload.single("thumbnail"), createCourse);
 router.get("/my", protect, contributorOnly, getMyCourses);
 router.get("/", protect, getAllCourses);
+router.get("/catalog", protect, getPaidCourseCatalog);
 router.get("/:id", protect, getCourseById);
 router.put("/:id", protect, upload.single("thumbnail"), updateCourse);
 router.put("/:id/basic-info", protect, contributorOnly, upload.single("thumbnail"), updateCourseBasicInfo);

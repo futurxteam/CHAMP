@@ -334,6 +334,15 @@ export const courseApi = {
       headers: { Authorization: `Bearer ${token}` },
     }),
 
+  getCatalog: (token, filters = {}) => {
+    const query = new URLSearchParams(
+      Object.fromEntries(Object.entries(filters).filter(([, v]) => v !== undefined && v !== ""))
+    ).toString();
+    return apiHandler(`/courses/catalog${query ? `?${query}` : ""}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
   getAll: (token, filters = {}) => {
     const query = new URLSearchParams(filters).toString();
     return apiHandler(`/courses?${query}`, {
