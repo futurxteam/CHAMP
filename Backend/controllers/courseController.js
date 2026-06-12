@@ -2,6 +2,7 @@ import Course from "../models/Course.js";
 import Module from "../models/Module.js";
 import Lesson from "../models/Lesson.js";
 import MEDICAL_DOMAINS from "../models/domains.js";
+import Enrollment from "../models/Enrollment.js";
 
 // --- COURSE CONTROLLERS ---
 
@@ -454,6 +455,75 @@ export const deleteLesson = async (req, res) => {
 
         await lesson.deleteOne();
         res.json({ message: "Lesson deleted" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const enrollInCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ message: "Course not found" });
+        }
+
+        if (course.status !== "approved") {
+            return res.status(400).json({ message: "Course is not approved" });
+        }
+
+        // Check if already enrolled
+        const existingEnrollment = await Enrollment.findOne({ user: req.user._id, course: courseId });
+        if (existingEnrollment) {
+            return res.json({ alreadyEnrolled: true });
+        }
+
+        // For now, allow enrollment ONLY if pricingType = free
+        if (course.pricingType === "paid") {
+            return res.status(400).json({ message: "Payment integration required." });
+        }
+
+        // Create Enrollment
+        const enrollment = await Enrollment.create({
+            user: req.user._id,
+            course: courseId,
+            enrollmentType: "free"
+        });
+
+        res.status(201).json({ success: true, message: "Successfully enrolled in course", enrollment });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getEnrolledCourses = async (req, res) => {
+    try {
+        const enrollments = await Enrollment.find({ user: req.user._id })
+            .populate({
+                path: "course",
+                populate: {
+                    path: "createdBy",
+                    select: "name"
+                }
+            })
+            .sort({ enrolledAt: -1 });
+
+        const enrolledCourses = enrollments
+            .filter(e => e.course)
+            .map(e => ({
+                _id: e.course._id,
+                enrollmentId: e._id,
+                title: e.course.title,
+                thumbnail: e.course.thumbnail,
+                domain: e.course.domain,
+                pricingType: e.course.pricingType,
+                price: e.course.price,
+                instructor: e.course.createdBy ? e.course.createdBy.name : "Dr. CHAMP Faculty",
+                enrolledAt: e.enrolledAt,
+                enrollmentType: e.enrollmentType
+            }));
+
+        res.json(enrolledCourses);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -387,6 +387,17 @@ export const courseApi = {
       body: { reason },
       headers: { Authorization: `Bearer ${token}` },
     }),
+
+  enroll: (courseId, token) =>
+    apiHandler(`/courses/${courseId}/enroll`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getEnrolledCourses: (token) =>
+    apiHandler("/courses/my-courses", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
 };
 
 // ─── Modules ──────────────────────────────────────────────────────────────────

@@ -21,6 +21,7 @@ import CourseBuilderPage from "./pages/dashboards/contributor/CourseBuilderPage"
 import UserDashboard from "./pages/dashboards/user/UserDashboard";
 import CourseDetailPage from "./pages/CourseDetailPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import MyCoursesPage from "./pages/MyCoursesPage";
 
 import RegisterCertificationPage from "./pages/RegisterCertificationPage";
 import CommunityNarrativePage from "./pages/CommunityNarrativePage";
@@ -217,6 +218,7 @@ export default function App() {
         <Route path="/dashboard/contributor/courses/create" element={<ProtectedRoute><ContributorDashboard><CreateCoursePage /></ContributorDashboard></ProtectedRoute>} />
         <Route path="/dashboard/contributor/courses/:courseId" element={<ProtectedRoute><ContributorDashboard><CourseBuilderPage /></ContributorDashboard></ProtectedRoute>} />
         <Route path="/dashboard/user" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+        <Route path="/my-courses" element={<L1Route><MyCoursesPage /></L1Route>} />
         <Route path="/courses/:courseId" element={<ProtectedRoute><AppLayout><CourseDetailPage /></AppLayout></ProtectedRoute>} />
         <Route path="/checkout/:courseId" element={<ProtectedRoute><AppLayout><CheckoutPage /></AppLayout></ProtectedRoute>} />
 

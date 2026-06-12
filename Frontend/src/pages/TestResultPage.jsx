@@ -1,10 +1,33 @@
+import React, { useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import useStore from "../store/useStore";
+import { courseApi } from "../api/api";
 
 export default function TestResultPage() {
+  const { token } = useStore();
+  const [enrollStatuses, setEnrollStatuses] = useState({}); // { [courseId]: "idle" | "enrolling" | "enrolled" | "already" }
   const location = useLocation();
   const navigate = useNavigate();
   const result = location.state;
+
+  const handleEnroll = async (courseId) => {
+    setEnrollStatuses(prev => ({ ...prev, [courseId]: "enrolling" }));
+    try {
+      const res = await courseApi.enroll(courseId, token);
+      if (res.alreadyEnrolled) {
+        setEnrollStatuses(prev => ({ ...prev, [courseId]: "already" }));
+        alert("Already in My Courses");
+      } else {
+        setEnrollStatuses(prev => ({ ...prev, [courseId]: "enrolled" }));
+        alert("Successfully added to My Courses");
+      }
+    } catch (err) {
+      alert(err.message || "Failed to enroll");
+      setEnrollStatuses(prev => ({ ...prev, [courseId]: "idle" }));
+    }
+  };
+
   console.log('--- TEST RESULT DEBUG ---');
   console.log('Result State:', result);
   console.log('-------------------------');
@@ -221,13 +244,27 @@ export default function TestResultPage() {
                     {course.description}
                   </p>
 
-                  {/* Action button */}
-                  <div className="pt-4 border-t border-surface-50 mt-auto">
+                  {/* Action buttons */}
+                  <div className="pt-4 border-t border-surface-50 mt-auto flex flex-col gap-2">
+                    <button
+                      onClick={() => handleEnroll(course._id)}
+                      disabled={enrollStatuses[course._id] === "enrolling" || enrollStatuses[course._id] === "enrolled" || enrollStatuses[course._id] === "already"}
+                      className={`w-full py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 text-center flex items-center justify-center gap-2 group/btn ${
+                        enrollStatuses[course._id] === "enrolled" || enrollStatuses[course._id] === "already"
+                          ? "bg-green-600 text-white cursor-not-allowed"
+                          : "bg-primary-600 hover:bg-primary-700 text-white"
+                      }`}
+                    >
+                      {enrollStatuses[course._id] === "enrolling" && "Enrolling..."}
+                      {enrollStatuses[course._id] === "enrolled" && "Successfully added to My Courses"}
+                      {enrollStatuses[course._id] === "already" && "Already in My Courses"}
+                      {(!enrollStatuses[course._id] || enrollStatuses[course._id] === "idle") && "Enroll For Free"}
+                    </button>
                     <button
                       onClick={() => navigate(`/courses/${course._id}`)}
-                      className="w-full py-3 bg-surface-900 hover:bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 text-center flex items-center justify-center gap-2 group/btn"
+                      className="w-full py-2.5 bg-surface-900 hover:bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 text-center flex items-center justify-center gap-2 group/btn"
                     >
-                      Start Learning <span>➔</span>
+                      Open Course <span>➔</span>
                     </button>
                   </div>
                 </motion.div>

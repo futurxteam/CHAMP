@@ -70,6 +70,7 @@ export default function UserDashboard() {
 
   const menuItems = [
     { id: "discover", label: "Discover Content", icon: "🌐" },
+    { id: "my-courses", label: "My Courses", icon: "📚", link: "/my-courses" },
     { id: "saved", label: "Saved Resources", icon: "🔖" },
     { id: "profile", label: "My Profile", icon: "👤" },
     { id: "certs", label: "My Certifications", icon: "🏆" },
@@ -216,17 +217,28 @@ export default function UserDashboard() {
 
         <nav className="flex-1">
           {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                 setActiveTab(item.id);
-                 setViewContent(null);
-              }}
-              className={`sidebar-nav-item w-full text-left ${activeTab === item.id ? "active" : ""}`}
-            >
-              <span>{item.icon}</span>
-              {item.label}
-            </button>
+            item.link ? (
+              <Link
+                key={item.id}
+                to={item.link}
+                className={`sidebar-nav-item w-full text-left ${activeTab === item.id ? "active" : ""}`}
+              >
+                <span>{item.icon}</span>
+                {item.label}
+              </Link>
+            ) : (
+              <button
+                key={item.id}
+                onClick={() => {
+                   setActiveTab(item.id);
+                   setViewContent(null);
+                }}
+                className={`sidebar-nav-item w-full text-left ${activeTab === item.id ? "active" : ""}`}
+              >
+                <span>{item.icon}</span>
+                {item.label}
+              </button>
+            )
           ))}
         </nav>
 
