@@ -1,6 +1,7 @@
 /* api.js - Frontend API Handler */
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://champ-aw59.onrender.com/api";
+//http://localhost:5000/api
 
 const apiHandler = async (endpoint, options = {}) => {
   const { method = "GET", body, headers = {} } = options;
