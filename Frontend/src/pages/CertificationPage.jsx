@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import "./certification.css";
 
 export default function CertificationPage() {
   const containerVariants = {
@@ -10,263 +9,246 @@ export default function CertificationPage() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   };
 
   return (
-    <div className="cert-container">
+    <div className="min-h-screen bg-surface-50 pt-20">
       {/* Hero Section */}
-      <section className="cert-hero">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className="text-4xl md:text-6xl font-black mb-4 leading-tight">Explore Certification</h1>
-            <p className="text-xl md:text-2xl text-accent-400 font-bold mb-8 uppercase tracking-widest">
-              CHAMP 21 Certification & Competency Assessment
-            </p>
-          </motion.div>
+      <section className="relative py-20 px-4 md:px-8 bg-gradient-to-b from-primary-50/40 via-white to-surface-50/50">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary-200/10 rounded-full blur-[130px]" />
         </div>
-      </section>
 
-      {/* Why This Certification Exists */}
-      <section className="cert-section">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-100/60 border border-primary-200/50 text-primary-700 text-xs font-black uppercase tracking-wider"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+            CHAMP Competency Registry
+          </motion.div>
+          
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-surface-900 leading-tight"
+          >
+            Professional Healthcare Certifications
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-surface-600 max-w-2xl mx-auto font-medium leading-relaxed"
+          >
+            Validate your clinical operations, quality assurance, and hospital management expertise. Earn digital credentials trusted by premier healthcare organizations.
+          </motion.p>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center"
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="pt-4"
           >
-            <h2 className="text-3xl font-black text-surface-900 mb-8 pb-3 border-b-4 border-primary-500 inline-block">Why This Certification Exists</h2>
-            <div className="space-y-6 text-lg text-surface-600 leading-relaxed text-left mt-10">
-              <p className="font-bold text-surface-900 text-xl">In healthcare administration, the real test is not what you know. It is how you respond when situations become uncertain, complex, and time-sensitive.</p>
-              <p>Most certifications available today still focus on concepts that were designed in a different era. They assess memory, not readiness.</p>
-              
-              <div className="bg-surface-50 p-10 rounded-[3rem] border border-surface-100 my-12">
-                <p className="text-primary-700 font-black mb-6 uppercase tracking-wider text-sm">Hospitals today require something very different:</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    "Faster decision-making",
-                    "Better coordination across departments",
-                    "Stronger understanding of patient expectations",
-                    "Ability to handle real-time operational challenges"
-                  ].map((text, i) => (
-                    <div key={i} className="flex items-center gap-3 text-surface-900">
-                      <div className="w-2 h-2 rounded-full bg-primary-600" />
-                      <span className="font-bold">{text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <p className="italic text-center text-primary-600 font-bold text-lg">
-                CHAMP 21 Certification is designed to reflect this shift. It evaluates whether a professional is prepared to function effectively in the 21st century healthcare environment.
-              </p>
-            </div>
+            <Link to="/register-certification" className="btn-primary font-bold px-8 py-4 bg-primary-600 text-white rounded-2xl shadow-xl shadow-primary-500/20 hover:bg-primary-700 transition-all">
+              Begin Competency Assessment
+            </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* What Makes It Different */}
-      <section className="cert-section border-t border-surface-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-black text-surface-900 mb-4">What Makes CHAMP 21 Different</h2>
-            <p className="text-surface-600 font-medium italic">"This is not a traditional exam. It is a competency-based assessment system."</p>
+      {/* Certification Levels Display */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {[
+              {
+                title: "CHAMP L1 - Associate Healthcare Manager",
+                desc: "Designed for entry-level executives and students trying to validate foundation metrics in department flow.",
+                level: "Level 1",
+                questions: "50 MCQ",
+                duration: "60 mins",
+                passing: "70%",
+                difficulty: "Foundation"
+              },
+              {
+                title: "CHAMP L2 - Certified Healthcare Manager",
+                desc: "Designed for department managers and coordinators handling active escalations, quality audits, and safety loops.",
+                level: "Level 2",
+                questions: "60 MCQ + Scenarios",
+                duration: "90 mins",
+                passing: "75%",
+                difficulty: "Intermediate",
+                popular: true
+              },
+              {
+                title: "CHAMP L3 - Fellow Clinical Operations Director",
+                desc: "Designed for senior executives and CMOs directing long-term strategy, hospital compliance, and revenue cycles.",
+                level: "Level 3",
+                questions: "80 Scenario Simulations",
+                duration: "120 mins",
+                passing: "80%",
+                difficulty: "Expert"
+              }
+            ].map((cert, i) => (
+              <div key={i} className="p-8 rounded-[2.5rem] bg-surface-50 border border-surface-200 flex flex-col justify-between hover:shadow-xl transition-all relative overflow-hidden">
+                {cert.popular && (
+                  <span className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-primary-600 text-white text-[9px] font-black uppercase tracking-wider">
+                    Most Popular
+                  </span>
+                )}
+                <div>
+                  <span className="text-[10px] text-primary-600 font-black uppercase tracking-widest block mb-4">{cert.level}</span>
+                  <h3 className="text-xl font-black text-surface-900 mb-4 leading-snug">{cert.title}</h3>
+                  <p className="text-xs text-surface-500 font-medium leading-relaxed mb-6">{cert.desc}</p>
+                  
+                  <div className="space-y-3 mb-8 border-t border-surface-200/50 pt-6">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-surface-400">Questions:</span>
+                      <span className="text-surface-800 font-bold">{cert.questions}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-surface-400">Duration:</span>
+                      <span className="text-surface-800 font-bold">{cert.duration}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-surface-400">Passing Score:</span>
+                      <span className="text-surface-800 font-bold">{cert.passing}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-surface-400">Difficulty:</span>
+                      <span className="text-surface-800 font-bold">{cert.difficulty}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Link to="/register-certification" className="w-full block py-4 bg-surface-900 text-white hover:bg-surface-800 text-xs font-black uppercase tracking-widest text-center rounded-2xl transition-all">
+                  Register For Exam
+                </Link>
+              </div>
+            ))}
           </div>
-          
+        </div>
+      </section>
+
+      {/* Learning Path visualization */}
+      <section className="py-20 bg-surface-50 border-t border-surface-200/50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl font-extrabold text-surface-900 tracking-tight">The Certification Lifecycle</h2>
+            <p className="text-surface-500 font-medium mt-3">From validation to recruitment, here is how CHAMP works for your credentials.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {[
+              { title: "Step 1: Application", desc: "Select your competency track and verify background credentials." },
+              { title: "Step 2: Assessment", desc: "Take the time-bound online simulation exam under proctored tracking." },
+              { title: "Step 3: Verification", desc: "Our registry verifies outcomes and registers a unique ID." },
+              { title: "Step 4: Promotion", desc: "Share your digital credential and join the verified talent pool." }
+            ].map((step, i) => (
+              <div key={i} className="p-8 rounded-[2rem] bg-white border border-surface-200 hover:border-primary-400 transition-colors">
+                <span className="text-3xl font-extrabold text-primary-600/30 block mb-4">0{i+1}</span>
+                <h4 className="text-sm font-black text-surface-900 mb-2">{step.title}</h4>
+                <p className="text-[11px] text-surface-500 font-semibold leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Digital Certificate Preview */}
+      <section className="py-24 bg-white border-t border-surface-200/50">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+          <div className="lg:col-span-6 space-y-6">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-surface-900 tracking-tight leading-tight">Industry Recognized Digital Credentials</h2>
+            <p className="text-surface-600 font-medium leading-relaxed">
+              Every professional who passes a proctored assessment is registered in our public lookup registry. Hospitals can immediately audit your credentials.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-surface-50 p-4 rounded-xl border border-surface-150">
+                <h5 className="text-xs font-black text-surface-900 mb-1">Verifiable</h5>
+                <p className="text-[10px] text-surface-500 font-medium">Unique hash verifiable live.</p>
+              </div>
+              <div className="bg-surface-50 p-4 rounded-xl border border-surface-150">
+                <h5 className="text-xs font-black text-surface-900 mb-1">Secure</h5>
+                <p className="text-[10px] text-surface-500 font-medium">Protected PDF with metadata seal.</p>
+              </div>
+            </div>
+          </div>
+          <div className="lg:col-span-6 flex justify-center">
+            <div className="w-full max-w-md p-8 bg-surface-50 rounded-[3rem] border border-surface-200 shadow-xl relative overflow-hidden bg-gradient-to-br from-surface-50 to-primary-50/10">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary-100 rounded-bl-[3rem] pointer-events-none opacity-40" />
+              <div className="flex justify-between items-center mb-8">
+                <span className="text-[9px] font-black text-surface-400 uppercase tracking-widest">Institutional Registry</span>
+                <span className="text-[8px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-widest">Active</span>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <span className="text-[8px] text-surface-400 font-black uppercase tracking-widest block mb-0.5">Recipient</span>
+                  <p className="text-lg font-black text-surface-900">Jane Doe, MHA</p>
+                </div>
+                <div>
+                  <span className="text-[8px] text-surface-400 font-black uppercase tracking-widest block mb-0.5">Credential</span>
+                  <p className="text-xs font-black text-primary-600">CHAMP-Certified Healthcare Manager (L2)</p>
+                </div>
+                <div className="pt-4 border-t border-surface-200/50 flex justify-between text-[10px] font-semibold text-surface-500">
+                  <span>ID: CHMP-8392-L2</span>
+                  <span>Verified: Jun 2026</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Success Stories / Testimonials */}
+      <section className="py-20 bg-surface-50 border-t border-surface-200/50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl font-extrabold text-surface-900 tracking-tight">Success Stories</h2>
+            <p className="text-surface-500 font-medium mt-3">Read how certified operators are applying structured workflows in Indian hospital networks.</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
-              { title: "Focus on Application, Not Just Knowledge", desc: "Instead of asking 'what is correct,' the assessment focuses on 'what will you do.'" },
-              { title: "Built Around Present-Day Challenges", desc: "Scenarios reflect actual situations seen in Indian hospitals today." },
-              { title: "Designed for Different Levels", desc: "Each level is aligned with what is expected from professionals at that stage." },
-              { title: "Continuously Evolving via Co-Creation", desc: "Refined using inputs from practicing professionals within our community." },
-            ].map((item, i) => (
-              <motion.div key={i} className="p-8 bg-white rounded-3xl shadow-sm border border-surface-200 hover:border-primary-400 transition-colors">
-                <h4 className="font-black text-primary-700 mb-3">{item.title}</h4>
-                <p className="text-surface-600 text-sm leading-relaxed">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Certification Levels */}
-      <section className="cert-section border-t border-surface-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black text-surface-900 text-center mb-16">Certification Levels</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
               {
-                lvl: "Entry-Level",
-                forWhom: "Professionals beginning their careers",
-                focus: ["Understanding hospital systems", "Basic operational awareness", "Simple real-life situations", "Structured thinking"]
+                quote: "Passing the CHAMP L2 exam allowed our billing team to restructure escalation processes, dropping discharge approval times by 22% in our hospital.",
+                author: "Ananya Iyer, CHM",
+                role: "Operations Head, Apollo Health Care"
               },
               {
-                lvl: "Mid-Level",
-                forWhom: "Managing departments or processes",
-                focus: ["Decision-making in operations", "Patient & team challenges", "Process improvement thinking", "Balancing quality and efficiency"]
-              },
-              {
-                lvl: "Senior & CXO",
-                forWhom: "Professionals in leadership roles",
-                focus: ["Strategic decision-making", "High-pressure leadership", "System-level thinking", "Critical communication"]
+                quote: "The scenario-based simulations perfectly reflect what we encounter on night shifts. It is an exceptional preparation matrix.",
+                author: "Siddharth Sen, CPSO",
+                role: "Quality QA Lead, Fortis Health Network"
               }
-            ].map((level, i) => (
-              <motion.div key={i} className="level-card">
-                <div className="mb-6">
-                  <span className="text-[10px] uppercase font-black tracking-widest text-primary-600 px-3 py-1 bg-primary-50 rounded-full">Tier 0{i+1}</span>
-                  <h3 className="text-2xl font-black text-surface-900 mt-4">{level.lvl}</h3>
-                  <p className="text-surface-500 text-sm font-medium italic mt-2">{level.forWhom}</p>
-                </div>
-                <div className="space-y-4">
-                  <p className="text-xs font-black uppercase text-surface-400 tracking-tighter">Core Focus Areas:</p>
-                  {level.focus.map((f, j) => (
-                    <div key={j} className="flex items-center justify-center gap-3">
-                      <div className="w-1.5 h-1.5 bg-primary-600 rounded-full" />
-                      <span className="text-sm font-bold text-surface-700">{f}</span>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Assessment Structure */}
-      <section className="cert-section border-t border-surface-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black text-surface-900 mb-16 text-center">Assessment Structure</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { icon: "📝", title: "Scenario Solving", desc: "Realistic situations requiring structured solutions." },
-              { icon: "🔘", title: "Objective Questions", desc: "Clarity in key management & operation concepts." },
-              { icon: "📊", title: "Case Analysis", desc: "Prioritization and decision-making in short cases." },
-              { icon: "🧠", title: "Situational Judgment", desc: "Professional response to sensitive challenges." },
-              { icon: "⏱️", title: "Simulation Tasks", desc: "Time-bound operational decision-making." },
-              { icon: "🎯", title: "Role-Based Specifics", desc: "Questions tailored to your exact responsibility level." },
-            ].map((item, i) => (
-              <div key={i} className="assessment-item text-surface-900">
-                <span className="text-3xl">{item.icon}</span>
-                <div>
-                  <h4 className="font-bold text-primary-700 mb-1">{item.title}</h4>
-                  <p className="text-xs text-surface-500 leading-relaxed font-medium">{item.desc}</p>
-                </div>
+            ].map((story, i) => (
+              <div key={i} className="p-8 rounded-[2.5rem] bg-white border border-surface-200 shadow-sm">
+                <p className="text-sm text-surface-600 font-medium italic leading-relaxed mb-6">"{story.quote}"</p>
+                <h5 className="text-xs font-black text-surface-900">{story.author}</h5>
+                <p className="text-[10px] text-surface-400 font-bold uppercase tracking-wider">{story.role}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Co-Creative model */}
-      <section className="cert-section border-t border-surface-100 text-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black text-surface-900 mb-8">Co-Creative Assessment Model</h2>
-          <p className="text-lg text-surface-600 mb-12">CHAMP 21 Certification is not built in isolation. Practicing professionals actively contribute to designing scenarios and identifying emerging challenges.</p>
-          <div className="p-10 border border-surface-200 rounded-[3rem]">
-            <p className="text-xl font-black text-surface-800 italic">"Ensuring that the certification stays aligned with what is actually happening in hospitals today."</p>
-            <div className="w-12 h-1 bg-primary-600 mx-auto mt-6" />
+      {/* CTA Section */}
+      <section className="py-24 bg-white text-center px-6 border-t border-surface-200/50">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-surface-900 tracking-tight">Ready to validate your healthcare operations expertise?</h2>
+          <p className="text-sm text-surface-500 font-medium max-w-lg mx-auto leading-relaxed">
+            Register for the online proctored competency exam and earn your digital verification credential.
+          </p>
+          <div className="pt-4">
+            <Link to="/register-certification" className="btn-primary font-bold px-10 py-5 bg-primary-600 text-white rounded-2xl shadow-xl shadow-primary-500/20">
+              Become Certified
+            </Link>
           </div>
         </div>
-      </section>
-
-      {/* Certification Outcome */}
-      <section className="cert-section border-t border-surface-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-16 items-center">
-            <div className="flex-1">
-              <h2 className="text-3xl font-black text-surface-900 mb-8">Certification Outcome</h2>
-              <div className="space-y-4">
-                <div className="outcome-badge border border-surface-200 shadow-sm">CHAMP 21 Certified Professional (Level-Specific)</div>
-                <div className="outcome-badge border border-surface-200 shadow-sm">Detailed Performance Scorecard</div>
-                <div className="outcome-badge border border-surface-200 shadow-sm">Recognition within the CHAMP 21 Community</div>
-              </div>
-            </div>
-            <div className="flex-1 w-full">
-              <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-surface-200">
-                <p className="text-xs font-black text-primary-600 uppercase mb-8 tracking-widest">Scorecard Insights:</p>
-                <div className="space-y-8">
-                  {["Problem-solving ability", "Decision-making approach", "Operational understanding", "Practical readiness"].map((item, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between mb-3">
-                        <span className="text-sm font-black text-surface-800">{item}</span>
-                        <span className="text-[10px] font-bold text-surface-400">BENCHMARK 0{i+1}</span>
-                      </div>
-                      <div className="h-3 w-full bg-surface-100 rounded-full overflow-hidden border border-surface-200">
-                        <motion.div 
-                          className="h-full bg-surface-900"
-                          initial={{ width: 0 }}
-                          whileInView={{ width: "85%" }}
-                          viewport={{ once: true }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Why This Matters */}
-      <section className="cert-section border-t border-surface-100 text-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black text-surface-900 mb-8">Why This Matters</h2>
-          <p className="text-lg text-surface-500 mb-12 font-medium">Hospitals today are looking for professionals who can handle situations independently and responsibly.</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              "Think beyond theory",
-              "Respond to real challenges",
-              "Prepared for current demands"
-            ].map((text, i) => (
-              <div key={i} className="p-8 bg-surface-900 text-white rounded-2xl font-black shadow-lg">
-                {text}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How to Get Started */}
-      <section className="cert-section border-t border-surface-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black text-surface-900 text-center mb-16">How to Get Started</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            {[
-              "Register for the certification",
-              "Access preparation resources",
-              "Attempt the assessment online",
-              "Receive your report & certificate"
-            ].map((step, i) => (
-              <div key={i} className="group">
-                <div className="step-bubble mx-auto group-hover:scale-110 transition-transform">{i+1}</div>
-                <p className="font-black text-surface-900 text-sm whitespace-pre-line">{step}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="cert-cta-section text-center">
-          <motion.div 
-            className="cert-cta-card" 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h3 className="text-4xl font-black text-surface-900 mb-6 leading-tight">Take the Next Step</h3>
-            <p className="text-surface-500 mb-12 text-xl font-medium max-w-2xl mx-auto leading-relaxed">Clarity for where you stand. Direction for how you improve. Join a community built on shared growth.</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-6">
-              <Link to="/register-certification" className="px-10 py-5 bg-primary-600 text-white font-black rounded-2xl shadow-xl hover:bg-primary-500 transition-all">Register for Certification</Link>
-              <Link to="/join-community" className="px-10 py-5 bg-surface-900 text-white font-black rounded-2xl hover:bg-surface-800 transition-all">Join the Community</Link>
-            </div>
-          </motion.div>
       </section>
     </div>
   );

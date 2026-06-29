@@ -1,7 +1,9 @@
 /* api.js - Frontend API Handler */
 
-const API_URL = "https://champ-aw59.onrender.com/api";
-//http://localhost:5000/api
+const API_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://champ-aw59.onrender.com/api";
 
 const apiHandler = async (endpoint, options = {}) => {
   const { method = "GET", body, headers = {} } = options;
@@ -312,6 +314,39 @@ export const adminCertApi = {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     }),
+
+  updateQuestion: (id, data, token) =>
+    apiHandler(`/admin/question/${id}`, {
+      method: "PUT",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  // Returns raw Response so caller can call .blob() — bypasses apiHandler JSON parsing
+  downloadTemplate: (token) =>
+    fetch(`${API_URL}/admin/certification/template`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  importQuestions: (certId, file, token) => {
+    const form = new FormData();
+    form.append("file", file);
+    return apiHandler(`/admin/certification/${certId}/import`, {
+      method: "POST",
+      body: form,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  uploadQuestionImage: (file, token) => {
+    const form = new FormData();
+    form.append("image", file);
+    return apiHandler("/admin/certification/upload-image", {
+      method: "POST",
+      body: form,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
 };
 
 // ─── Domains ──────────────────────────────────────────────────────────────────
@@ -395,11 +430,44 @@ export const courseApi = {
       headers: { Authorization: `Bearer ${token}` },
     }),
 
+  enrollRemediation: (courseId, attemptId, token) =>
+    apiHandler(`/courses/${courseId}/enroll-remediation`, {
+      method: "POST",
+      body: { attemptId },
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
   getEnrolledCourses: (token) =>
     apiHandler("/courses/my-courses", {
       headers: { Authorization: `Bearer ${token}` },
     }),
+
+  getCourseContent: (courseId, token) =>
+    apiHandler(`/courses/${courseId}/content`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
 };
+
+// ─── Progress ─────────────────────────────────────────────────────────────────
+export const progressApi = {
+  update: (data, token) =>
+    apiHandler("/course-progress/update", {
+      method: "POST",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getForCourse: (courseId, token) =>
+    apiHandler(`/course-progress/${courseId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  checkRetakeEligibility: (courseId, token) =>
+    apiHandler(`/course-progress/${courseId}/retake-eligible`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+};
+
 
 // ─── Modules ──────────────────────────────────────────────────────────────────
 export const moduleApi = {
@@ -457,5 +525,71 @@ export const lessonApi = {
     }),
 };
 
+// ─── Community Discussions ────────────────────────────────────────────────────
+export const communityApi = {
+  getDiscussions: (token, community = "", sort = "new") => {
+    const params = new URLSearchParams();
+    if (community) params.set("community", community);
+    if (sort) params.set("sort", sort);
+    const q = params.toString();
+    return apiHandler(`/community${q ? `?${q}` : ""}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+
+  getTrending: (token) =>
+    apiHandler("/community/trending", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  getById: (id, token) =>
+    apiHandler(`/community/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  create: (data, token) =>
+    apiHandler("/community", {
+      method: "POST",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  upvote: (id, token) =>
+    apiHandler(`/community/${id}/upvote`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  deleteDiscussion: (id, token) =>
+    apiHandler(`/community/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  pin: (id, token) =>
+    apiHandler(`/community/${id}/pin`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  addComment: (id, data, token) =>
+    apiHandler(`/community/${id}/comments`, {
+      method: "POST",
+      body: data,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  upvoteComment: (discussionId, commentId, token) =>
+    apiHandler(`/community/${discussionId}/comments/${commentId}/upvote`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  deleteComment: (discussionId, commentId, token) =>
+    apiHandler(`/community/${discussionId}/comments/${commentId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+};
 
 export default apiHandler;

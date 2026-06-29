@@ -2,14 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../dashboard.css";
 import useStore from "../../../store/useStore";
-import { contentApi, testApi, domainApi } from "../../../api/api";
+import { contentApi, testApi, domainApi, eventApi } from "../../../api/api";
 import VideoPlayer from "../../../components/VideoPlayer";
+import CommunityDiscussions from "../../../components/CommunityDiscussions";
 
 export default function ContributorDashboard({ children }) {
    const location = useLocation();
    const navigate = useNavigate();
    const { user, logout, token } = useStore();
-   const [activeTab, setActiveTab] = useState("profile");
+   const [activeTab, setActiveTab] = useState("discussions");
    const [myContent, setMyContent] = useState([]);
    const [loading, setLoading] = useState(false);
    const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,6 +22,37 @@ export default function ContributorDashboard({ children }) {
 
    const [domains, setDomains] = useState([]);
    const [domainsLoading, setDomainsLoading] = useState(true);
+
+   const [events, setEvents] = useState([]);
+   const [eventLoading, setEventLoading] = useState(false);
+
+   const fetchEvents = async () => {
+      setEventLoading(true);
+      try {
+         const data = await eventApi.getEvents(token);
+         setEvents(data);
+      } catch (err) { console.error(err); }
+      finally { setEventLoading(false); }
+   };
+
+   const handleRegisterEvent = async (id) => {
+      try {
+         const res = await eventApi.register(id, token);
+         alert(res.message);
+         fetchEvents();
+      } catch (err) { alert(err.message); }
+   };
+
+   const checkActive = (array) => {
+      if (!array || !user) return false;
+      const myId = user.id || user._id;
+      if (!myId) return false;
+      return array.some(id => {
+         if (!id) return false;
+         const compareId = id._id || id;
+         return compareId.toString() === myId.toString();
+      });
+   };
 
    const fetchCertificates = async () => {
       setCertLoading(true);
@@ -185,15 +217,18 @@ export default function ContributorDashboard({ children }) {
    useEffect(() => {
       if (activeTab === "content") fetchMyContent();
       if (activeTab === "certs") fetchCertificates();
+      if (activeTab === "events") fetchEvents();
    }, [activeTab]);
 
    const roleLabel = user?.role === "L3" ? "Senior Contributor (L3)" : "Contributor (L2)";
 
     const menuItems = [
+      { id: "discussions", label: "Community Discussions", icon: "💬" },
       { id: "profile", label: "My Profile", icon: "👤" },
       { id: "content", label: "Manage Content", icon: "📄" },
       { id: "courses", label: "Structured Courses", icon: "📚", link: "/dashboard/contributor/courses" },
       { id: "certs", label: "My Certifications", icon: "🏆" },
+      { id: "events", label: "Platform Events", icon: "📅" },
     ];
 
     return (
@@ -270,6 +305,12 @@ export default function ContributorDashboard({ children }) {
             <div className="dashboard-body">
                {(activeTab === "courses" && children) ? children : (
                   <>
+                     {activeTab === "discussions" && (
+                        <div>
+                           <CommunityDiscussions user={user} token={token} />
+                        </div>
+                     )}
+
                      {activeTab === "profile" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="p-8 bg-white rounded-3xl border border-surface-100 shadow-sm">
@@ -667,6 +708,108 @@ export default function ContributorDashboard({ children }) {
                      </div>
                   </div>
                )}
+
+                {activeTab === "events" && (
+                   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                      <div className="flex items-center justify-between mb-8">
+                         <h2 className="text-2xl font-black text-surface-900 uppercase tracking-tighter">Upcoming Platform Events</h2>
+                         <span className="px-4 py-2 bg-primary-50 text-primary-600 text-[10px] font-black uppercase rounded-full tracking-widest">{events.length} Active Events</span>
+                      </div>
+
+                      {eventLoading ? (
+                         <div className="flex justify-center p-20">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                         </div>
+                      ) : events.length > 0 ? (
+                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {events.map(event => (
+                               <div key={event._id} className="bg-white rounded-[3rem] border border-surface-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group flex flex-col md:flex-row">
+                                  <div className="w-full md:w-48 h-48 md:h-auto relative overflow-hidden">
+                                     <img 
+                                        src={event.thumbnail || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format"} 
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                                        alt="" 
+                                     />
+                                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-4">
+                                        <span className="text-white text-[10px] font-black uppercase tracking-widest bg-primary-600 px-2 py-1 rounded">
+                                           {new Date(event.date).toLocaleDateString()}
+                                        </span>
+                                     </div>
+                                  </div>
+                                  <div className="flex-1 p-8 flex flex-col justify-between">
+                                     <div>
+                                        <div className="flex justify-between items-start mb-2">
+                                           <div className="flex flex-col gap-1.5">
+                                              <span className={`w-fit px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
+                                                 (event.eventType || "offline") === "online" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                                              }`}>
+                                                 {(event.eventType || "offline") === "online" ? "ONLINE EVENT" : "OFFLINE EVENT"}
+                                              </span>
+                                              <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter leading-none">{event.title}</h3>
+                                           </div>
+                                           <span className="text-[10px] font-black text-surface-300 uppercase italic whitespace-nowrap">{event.time}</span>
+                                        </div>
+                                        <p className="text-sm text-surface-500 line-clamp-2 mb-6 font-medium leading-relaxed">{event.description}</p>
+                                        
+                                        <div className="flex flex-wrap gap-4 mb-6">
+                                           <div className="flex items-center gap-2 text-[10px] font-black text-surface-400 uppercase tracking-widest">
+                                              {(event.eventType || "offline") === "online" ? (
+                                                 <>
+                                                    <span>🔗</span> Join Link Available
+                                                 </>
+                                              ) : (
+                                                 <>
+                                                    <span>📍</span> {event.location}
+                                                 </>
+                                              )}
+                                           </div>
+                                           <div className="flex items-center gap-2 text-[10px] font-black text-surface-400 uppercase tracking-widest">
+                                              <span>👥</span> {event.registrations?.length || 0} / {event.maxOccupants} Joined
+                                           </div>
+                                        </div>
+                                     </div>
+
+                                     <div className="pt-6 border-t border-surface-50 flex items-center justify-between">
+                                        <div className="text-[9px] font-black text-red-400 uppercase tracking-widest italic">
+                                           Ends: {new Date(event.registrationTimeline).toLocaleDateString()}
+                                        </div>
+                                        {checkActive(event.registrations) ? (
+                                            <div className="flex items-center gap-3">
+                                               <span className="px-6 py-2 bg-green-50 text-green-600 text-[10px] font-black uppercase rounded-full border border-green-100">
+                                                  ✓ Registered
+                                               </span>
+                                               {(event.eventType || "offline") === "online" && (
+                                                  <a 
+                                                     href={event.location}
+                                                     target="_blank"
+                                                     rel="noopener noreferrer"
+                                                     className="px-6 py-2 bg-primary-600 text-white text-[10px] font-black uppercase rounded-full hover:bg-primary-700 transition-all shadow-lg text-center"
+                                                  >
+                                                     Join Event
+                                                  </a>
+                                               )}
+                                            </div>
+                                         ) : (
+                                            <button 
+                                               onClick={() => handleRegisterEvent(event._id)}
+                                               className="px-6 py-2 bg-surface-900 text-white text-[10px] font-black uppercase rounded-full hover:bg-primary-600 transition-all shadow-lg"
+                                            >
+                                               Register
+                                            </button>
+                                         )}
+                                     </div>
+                                  </div>
+                               </div>
+                            ))}
+                         </div>
+                      ) : (
+                         <div className="p-20 bg-surface-50 rounded-[4rem] border-2 border-dashed border-surface-200 text-center">
+                            <span className="text-6xl mb-6 block">📅</span>
+                            <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">No platform events available.</h3>
+                         </div>
+                      )}
+                   </div>
+                )}
                   </>
                )}
             </div>

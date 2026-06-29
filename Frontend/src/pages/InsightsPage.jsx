@@ -1,177 +1,155 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import "./insights.css";
 
 export default function InsightsPage() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   };
 
   return (
-    <div className="insights-container">
-      {/* Hero */}
-      <section className="insights-hero">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className="text-4xl md:text-6xl font-black mb-4 leading-tight text-white uppercase tracking-tighter">INSIGHTS & RESOURCES</h1>
-            <p className="text-xl md:text-2xl text-accent-400 font-bold uppercase tracking-widest">
-              Where Thinking Meets Real Healthcare Practice
-            </p>
-          </motion.div>
+    <div className="min-h-screen bg-surface-50 pt-20">
+      {/* Hero Section */}
+      <section className="relative py-20 px-4 md:px-8 bg-gradient-to-b from-primary-50/40 via-white to-surface-50/50">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary-200/10 rounded-full blur-[130px]" />
         </div>
-      </section>
 
-      {/* Why This Matters */}
-      <section className="insights-section bg-white text-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-100/60 border border-primary-200/50 text-primary-700 text-xs font-black uppercase tracking-wider"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+            CHAMP Intelligence & Insights
+          </motion.div>
+          
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-surface-900 leading-tight"
+          >
+            Healthcare Management Insights
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-surface-600 max-w-2xl mx-auto font-medium leading-relaxed"
+          >
+            Stay updated with proctored operations case studies, compliance breakdowns, and clinical administration research papers.
+          </motion.p>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="pt-4"
           >
-            <h2 className="text-3xl font-black text-surface-900 mb-8 pb-3 border-b-4 border-primary-500 inline-block uppercase">Why This Section Matters</h2>
-            <div className="space-y-6 text-lg text-surface-600 leading-relaxed text-left mt-10">
-              <p className="font-bold text-surface-900 text-xl text-center mb-10">Healthcare is changing faster than most professionals can keep up with. Most available content repeats outdated frameworks.</p>
-              
-              <div className="bg-surface-50 p-12 rounded-[4rem] border border-surface-100 italic font-medium">
-                "CHAMP 21 positions itself as a thinking platform—where insights are grounded in real practice, current context, and shared experience. This section is not about information. It is about clarity."
-              </div>
-            </div>
+            <Link to="/blogs" className="btn-primary font-bold px-8 py-4 bg-primary-600 text-white rounded-2xl shadow-xl shadow-primary-500/20 hover:bg-primary-700 transition-all">
+              Browse Articles
+            </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* Articles & Blogs */}
-      <section className="insights-section bg-surface-50 shadow-inner">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="flex flex-col lg:flex-row gap-20 items-center">
-              <div className="flex-1">
-                 <h2 className="text-3xl font-black text-surface-900 mb-8 uppercase tracking-tighter">Articles & Blogs</h2>
-                 <p className="text-lg text-surface-500 mb-8 font-medium">Short, focused pieces that address real questions professionals face in their day-to-day work.</p>
-                 <div className="space-y-4">
-                    {["Handling patient dissatisfaction", "Balancing cost and quality", "Managing coordination gaps", "Adapting management concepts"].map((topic, i) => (
-                      <div key={i} className="p-4 bg-white rounded-xl border border-surface-200 font-bold text-surface-800 text-sm flex items-center gap-4">
-                         <div className="w-1.5 h-1.5 rounded-full bg-primary-600" /> {topic}
-                      </div>
-                    ))}
-                 </div>
-              </div>
-              <div className="flex-1 bg-primary-600 p-12 rounded-[4rem] text-white shadow-2xl">
-                 <h4 className="text-2xl font-black mb-6">Intent: Help professionals think better about what they are already dealing with.</h4>
-                 <div className="space-y-3 text-sm font-bold text-surface-100 uppercase tracking-widest opacity-80">
-                    <div>• Specific Issue</div>
-                    <div>• Practical Perspective</div>
-                    <div>• Clear Takeaways</div>
-                 </div>
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Real Case Studies */}
-      <section className="insights-section bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="case-study-accent">
-              <h2 className="text-3xl font-black mb-8 uppercase tracking-[0.2em] text-center underline decoration-accent-500 decoration-8 underline-offset-8">Real Case Studies (India-Focused)</h2>
-              <p className="text-surface-300 font-medium mb-16 text-center italic text-xl">"Understanding real approaches and their impact, not ideal solutions."</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 {[
-                   { t: "Patient Escalation", d: "A real complaint escalation and its structural handling." },
-                   { t: "Discharge Delays", d: "System-level causes identified in Indian hospital settings." },
-                   { t: "Audit Failures", d: "Corrective actions taken after accreditation setbacks." },
-                   { t: "Coordination Gaps", d: "Handling staff issues in high-pressure environments." }
-                 ].map((study, i) => (
-                   <div key={i} className="p-8 bg-white/5 border border-white/10 rounded-[2.5rem] hover:bg-white/10 transition-all cursor-default group">
-                      <h5 className="font-black text-accent-400 mb-2 group-hover:text-white transition-colors">{study.t}</h5>
-                      <p className="text-xs text-surface-400 font-medium leading-relaxed">{study.d}</p>
-                   </div>
-                 ))}
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Industry Insights & Reports */}
-      <section className="insights-section bg-surface-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="resource-card">
-                 <h3 className="text-2xl font-black text-surface-900 mb-8 border-b-2 border-primary-50 pb-4">Industry Insights</h3>
-                 <p className="text-surface-500 mb-8 font-medium">Staying aware of where the system is heading and how you need to adapt.</p>
-                 <div className="space-y-4">
-                    {[
-                      { t: "Changing Expectations", d: "Evolving patient behavior in India." },
-                      { t: "Digital Impact", d: "How digital systems change hospital operations." },
-                      { t: "Workforce Challenges", d: "Evolving management requirements." }
-                    ].map((item, i) => (
-                      <div key={i}>
-                        <h5 className="font-black text-surface-900 text-sm">{item.t}</h5>
-                        <p className="text-xs text-surface-400 font-bold">{item.d}</p>
-                      </div>
-                    ))}
-                 </div>
-              </div>
-              <div className="resource-card">
-                 <h3 className="text-2xl font-black text-surface-900 mb-8 border-b-2 border-primary-50 pb-4">Reports & Whitepapers</h3>
-                 <p className="text-surface-500 mb-8 font-medium">Evidence-informed understanding of key healthcare system issues.</p>
-                 <div className="space-y-4">
-                    {[
-                      "Operational Challenge Analysis",
-                      "Patient Experience Trends",
-                      "Quality & Safety Evaluations",
-                      "System Improvement Recommendations"
-                    ].map((report, i) => (
-                      <div key={i} className="flex gap-4 items-center">
-                         <span className="text-primary-600 font-black">📄</span>
-                         <span className="font-bold text-surface-800 text-sm leading-tight">{report}</span>
-                      </div>
-                    ))}
-                 </div>
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Recorded Sessions */}
-      <section className="insights-section bg-white text-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-           <h2 className="text-3xl font-black text-surface-900 mb-16 uppercase tracking-widest">Recorded Sessions</h2>
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { t: "Case-Based Learning", d: "Revisit in-depth situational analysis." },
-                { t: "Expert Discussions", d: "Industry leaders sharing strategic views." },
-                { t: "Bootcamp Recaps", d: "Summaries of intensive skill sessions." },
-                { t: "Leadership Talks", d: "Reflective conversations on management." }
-              ].map((rec, i) => (
-                <div key={i} className="p-8 bg-surface-50 rounded-3xl border border-surface-100 group transition-all hover:bg-surface-900 hover:border-surface-900">
-                   <div className="recording-indicator group-hover:text-primary-400">🔴 Recorded</div>
-                   <h5 className="font-black text-surface-900 mb-2 leading-tight group-hover:text-white transition-colors">{rec.t}</h5>
-                   <p className="text-xs text-surface-400 font-bold group-hover:text-surface-300 transition-colors">{rec.d}</p>
+      {/* Featured Highlight Card */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="p-8 md:p-12 rounded-[3.5rem] border border-surface-200 bg-gradient-to-tr from-white to-primary-50/5 shadow-xl relative overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="lg:col-span-8 space-y-4">
+                <span className="text-[9px] text-primary-600 font-black uppercase tracking-widest bg-primary-50 px-2.5 py-1 rounded-full inline-block">Featured Analysis</span>
+                <h3 className="text-2xl md:text-3xl font-black text-surface-900 leading-tight">Optimizing Emergency Room Triage Delays under NABH 5th Edition Frameworks</h3>
+                <p className="text-sm text-surface-500 leading-relaxed font-medium">
+                  A structured retrospective study detailing how active digital workflow tracking in major regional wards reduced patient transfer times by 18 minutes.
+                </p>
+                <div className="flex gap-4 text-xs font-bold text-surface-400">
+                  <span>By Dr. Rajesh Kurup</span>
+                  <span>•</span>
+                  <span>10 Min Read</span>
                 </div>
-              ))}
-           </div>
-           <p className="mt-16 text-xs font-black text-surface-400 uppercase tracking-widest italic">Learn at your own pace • Practical insights • Real examples</p>
+              </div>
+              <div className="lg:col-span-4 text-left lg:text-right">
+                <Link to="/blogs" className="inline-block px-8 py-4 bg-surface-900 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-surface-800 transition-colors">
+                  Read Article
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="insights-section bg-surface-50 text-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="bg-white p-12 md:p-16 rounded-[4rem] border border-surface-200 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary-600 opacity-5 rounded-bl-full" />
-              <h2 className="text-3xl font-black text-surface-900 mb-8">Ready to Deepen Your Thinking?</h2>
-              <div className="flex flex-col md:flex-row justify-center gap-6 relative z-10">
-                <Link to="/join" className="btn-primary px-10 py-5">Join CHAMP</Link>
-                <Link to="/engagement" className="btn-outline-dark px-10 py-5">Explore Activities</Link>
-                <Link to="/contributor" className="btn-outline-dark px-10 py-5">Become a Contributor</Link>
+      {/* Trending & Articles Grid */}
+      <section className="py-20 bg-surface-50 border-t border-surface-200/50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div className="lg:col-span-8 space-y-8">
+              <h3 className="text-2xl font-black text-surface-900 tracking-tight">Latest Clinical Insights</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  { title: "Standardizing escalation pathways for nocturnal nursing teams", category: "HospitalOps", author: "Priya Sharma", time: "6 Min Read" },
+                  { title: "Review of telemetry pipelines and EMR security checks", category: "Technology", author: "Amit Verma", time: "8 Min Read" },
+                  { title: "Addressing discharge delays through automated billing checks", category: "Finance", author: "Ananya Iyer", time: "5 Min Read" },
+                  { title: "Building patient safety audits under high ICU volumes", category: "QualityQA", author: "Dr. Jacob Varghese", time: "12 Min Read" }
+                ].map((item, i) => (
+                  <div key={i} className="p-6 rounded-[2rem] bg-white border border-surface-200 hover:border-primary-400 transition-colors flex flex-col justify-between">
+                    <div>
+                      <span className="text-[9px] text-primary-600 font-black uppercase tracking-widest block mb-2">{item.category}</span>
+                      <h4 className="text-sm font-black text-surface-900 mb-4">{item.title}</h4>
+                    </div>
+                    <div className="flex justify-between text-[10px] font-bold text-surface-400 border-t border-surface-100 pt-4 mt-4">
+                      <span>{item.author}</span>
+                      <span>{item.time}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-           </div>
+            </div>
+
+            <div className="lg:col-span-4 space-y-8">
+              <h3 className="text-2xl font-black text-surface-900 tracking-tight">Research & Publications</h3>
+              <div className="space-y-4">
+                {[
+                  { title: "Retrospective ER Workflow Optimization Report", downloads: "250+ Downloads", format: "PDF" },
+                  { title: "NABH 5th Edition Audit Readiness Template", downloads: "410+ Downloads", format: "DOCX" }
+                ].map((doc, i) => (
+                  <div key={i} className="p-5 rounded-2xl bg-white border border-surface-200 flex justify-between items-center hover:border-primary-400 transition-colors">
+                    <div>
+                      <h4 className="text-xs font-black text-surface-900 mb-1">{doc.title}</h4>
+                      <span className="text-[10px] text-surface-400 font-semibold">{doc.downloads}</span>
+                    </div>
+                    <span className="text-[9px] font-black text-primary-600 bg-primary-50 px-2 py-1 rounded">
+                      {doc.format}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24 bg-white border-t border-surface-200/50 text-center px-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-surface-900 tracking-tight">Want to contribute an article?</h2>
+          <p className="text-sm text-surface-500 font-medium max-w-lg mx-auto leading-relaxed">
+            Certified L2 & L3 operators have authoring routes to publish case studies and research reports.
+          </p>
+          <div className="pt-4">
+            <Link to="/contributor" className="btn-primary font-bold px-10 py-5 bg-primary-600 text-white rounded-2xl shadow-xl shadow-primary-500/20">
+              Apply as Contributor
+            </Link>
+          </div>
         </div>
       </section>
     </div>

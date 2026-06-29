@@ -87,7 +87,14 @@ export default function EventDetailPage() {
               ) : (
                 <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-accent-500 text-white rounded-full">Free</span>
               )}
-              <span className="px-3 py-1 text-xs font-medium bg-white/90 text-surface-700 rounded-full">{event.category}</span>
+              <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full text-white ${
+                (event.eventType || "offline") === "online" ? "bg-green-600" : "bg-blue-600"
+              }`}>
+                {(event.eventType || "offline") === "online" ? "ONLINE EVENT" : "OFFLINE EVENT"}
+              </span>
+              {event.category && (
+                <span className="px-3 py-1 text-xs font-medium bg-white/90 text-surface-700 rounded-full">{event.category}</span>
+              )}
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-white">{event.title}</h1>
           </div>
@@ -206,7 +213,9 @@ export default function EventDetailPage() {
                   </div>
                   <div>
                     <p className="text-xs text-surface-500">Location</p>
-                    <p className="text-sm font-semibold text-surface-700">{event.location}</p>
+                    <p className="text-sm font-semibold text-surface-700">
+                      {(event.eventType || "offline") === "online" ? "Meeting Link available" : event.location}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -244,9 +253,20 @@ export default function EventDetailPage() {
                   </Link>
                 </div>
               ) : isRegistered ? (
-                <div className="w-full py-3 text-center text-sm font-semibold text-accent-700 bg-accent-50 rounded-xl border border-accent-100">
-                  ✓ You're registered!
-                </div>
+                (event.eventType || "offline") === "online" ? (
+                  <a
+                    href={event.location}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full py-3 text-center text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-xl hover:shadow-lg transition-all"
+                  >
+                    Join Event
+                  </a>
+                ) : (
+                  <div className="w-full py-3 text-center text-sm font-semibold text-accent-700 bg-accent-50 rounded-xl border border-accent-100">
+                    ✓ You're registered!
+                  </div>
+                )
               ) : (
                 <button
                   onClick={() => registerForEvent(event.id)}

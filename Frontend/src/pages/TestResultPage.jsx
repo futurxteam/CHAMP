@@ -4,29 +4,43 @@ import { motion } from "framer-motion";
 import useStore from "../store/useStore";
 import { courseApi } from "../api/api";
 
+
 export default function TestResultPage() {
   const { token } = useStore();
-  const [enrollStatuses, setEnrollStatuses] = useState({}); // { [courseId]: "idle" | "enrolling" | "enrolled" | "already" }
+  // enrollStatuses: { [courseId]: "idle" | "enrolling" | "enrolled" | "already" }
+  const [enrollStatuses, setEnrollStatuses] = useState({});
+  // enrollErrors: { [courseId]: string } — inline error messages for restriction violations
+  const [enrollErrors, setEnrollErrors] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
   const result = location.state;
 
+  // Pull attemptId from result (sent by TestPage after submit)
+  const attemptId = result?.attemptId;
+
   const handleEnroll = async (courseId) => {
     setEnrollStatuses(prev => ({ ...prev, [courseId]: "enrolling" }));
+    setEnrollErrors(prev => ({ ...prev, [courseId]: null }));
     try {
-      const res = await courseApi.enroll(courseId, token);
+      const res = await courseApi.enrollRemediation(courseId, attemptId, token);
       if (res.alreadyEnrolled) {
         setEnrollStatuses(prev => ({ ...prev, [courseId]: "already" }));
-        alert("Already in My Courses");
       } else {
         setEnrollStatuses(prev => ({ ...prev, [courseId]: "enrolled" }));
-        alert("Successfully added to My Courses");
       }
     } catch (err) {
-      alert(err.message || "Failed to enroll");
-      setEnrollStatuses(prev => ({ ...prev, [courseId]: "idle" }));
+      // Check for the specific remediation restriction message
+      const msg = err.message || "Failed to enroll";
+      if (msg.includes("active remediation") || msg.includes("already have")) {
+        setEnrollErrors(prev => ({ ...prev, [courseId]: msg }));
+        setEnrollStatuses(prev => ({ ...prev, [courseId]: "blocked" }));
+      } else {
+        setEnrollErrors(prev => ({ ...prev, [courseId]: msg }));
+        setEnrollStatuses(prev => ({ ...prev, [courseId]: "idle" }));
+      }
     }
   };
+
 
   console.log('--- TEST RESULT DEBUG ---');
   console.log('Result State:', result);
@@ -246,27 +260,58 @@ export default function TestResultPage() {
 
                   {/* Action buttons */}
                   <div className="pt-4 border-t border-surface-50 mt-auto flex flex-col gap-2">
-                    <button
-                      onClick={() => handleEnroll(course._id)}
-                      disabled={enrollStatuses[course._id] === "enrolling" || enrollStatuses[course._id] === "enrolled" || enrollStatuses[course._id] === "already"}
-                      className={`w-full py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 text-center flex items-center justify-center gap-2 group/btn ${
-                        enrollStatuses[course._id] === "enrolled" || enrollStatuses[course._id] === "already"
-                          ? "bg-green-600 text-white cursor-not-allowed"
-                          : "bg-primary-600 hover:bg-primary-700 text-white"
-                      }`}
-                    >
-                      {enrollStatuses[course._id] === "enrolling" && "Enrolling..."}
-                      {enrollStatuses[course._id] === "enrolled" && "Successfully added to My Courses"}
-                      {enrollStatuses[course._id] === "already" && "Already in My Courses"}
-                      {(!enrollStatuses[course._id] || enrollStatuses[course._id] === "idle") && "Enroll For Free"}
-                    </button>
-                    <button
-                      onClick={() => navigate(`/courses/${course._id}`)}
-                      className="w-full py-2.5 bg-surface-900 hover:bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 text-center flex items-center justify-center gap-2 group/btn"
-                    >
-                      Open Course <span>➔</span>
-                    </button>
+                    {/* Inline error for remediation restriction */}
+                    {enrollErrors[course._id] && (
+                      <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold leading-relaxed">
+                        ⚠️ {enrollErrors[course._id]}
+                        <button
+                          className="mt-2 w-full py-2 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-colors"
+                          onClick={() => navigate("/my-courses")}
+                        >
+                          Go to My Courses →
+                        </button>
+                      </div>
+                    )}
+
+                    {enrollStatuses[course._id] === "enrolled" ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="py-3 bg-green-50 border border-green-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-green-700 text-center">
+                          ✓ Added to My Courses
+                        </div>
+                        <button
+                          onClick={() => navigate("/my-courses")}
+                          className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 text-center"
+                        >
+                          Go to My Courses →
+                        </button>
+                      </div>
+                    ) : enrollStatuses[course._id] === "already" ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="py-3 bg-surface-100 border border-surface-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-surface-500 text-center">
+                          Already in My Courses
+                        </div>
+                        <button
+                          onClick={() => navigate("/my-courses")}
+                          className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 text-center"
+                        >
+                          Go to My Courses →
+                        </button>
+                      </div>
+                    ) : !enrollErrors[course._id] && (
+                      <button
+                        onClick={() => handleEnroll(course._id)}
+                        disabled={enrollStatuses[course._id] === "enrolling" || enrollStatuses[course._id] === "blocked"}
+                        className={`w-full py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md active:scale-95 text-center flex items-center justify-center gap-2 ${
+                          enrollStatuses[course._id] === "enrolling"
+                            ? "bg-surface-300 text-surface-500 cursor-not-allowed"
+                            : "bg-primary-600 hover:bg-primary-700 text-white"
+                        }`}
+                      >
+                        {enrollStatuses[course._id] === "enrolling" ? "Enrolling..." : "Enroll For Free"}
+                      </button>
+                    )}
                   </div>
+
                 </motion.div>
               ))}
             </div>

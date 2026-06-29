@@ -7,11 +7,12 @@ import useStore from "../../../store/useStore";
 import { contentApi, threadApi, commentApi, eventApi, testApi, domainApi, courseApi } from "../../../api/api";
 import VideoPlayer from "../../../components/VideoPlayer";
 import DiscussionSection from "../../../components/DiscussionSection";
+import CommunityDiscussions from "../../../components/CommunityDiscussions";
 
 export default function UserDashboard() {
   const { user, logout, token } = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "discover");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "discussions");
   
   useEffect(() => {
     setSearchParams({ tab: activeTab });
@@ -25,6 +26,7 @@ export default function UserDashboard() {
   const [availableCertsLoading, setAvailableCertsLoading] = useState(false);
   const [courses, setCourses] = useState([]);
   const [courseLoading, setCourseLoading] = useState(false);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState(new Set());
   const navigate = useNavigate();
 
   // Filters state
@@ -69,14 +71,14 @@ export default function UserDashboard() {
   };
 
   const menuItems = [
+    { id: "discussions", label: "Community Discussions", icon: "💬" },
     { id: "discover", label: "Discover Content", icon: "🌐" },
-    { id: "my-courses", label: "My Courses", icon: "📚", link: "/my-courses" },
     { id: "saved", label: "Saved Resources", icon: "🔖" },
     { id: "profile", label: "My Profile", icon: "👤" },
     { id: "certs", label: "My Certifications", icon: "🏆" },
     { id: "learning", label: "My Learning & Programs", icon: "📖" },
+    { id: "my-courses", label: "My Courses", icon: "📚", link: "/my-courses" },
     { id: "test", label: "Test Dashboard", icon: "🧪" },
-    { id: "discussions", label: "Community Discussions", icon: "💬" },
     { id: "events", label: "Events & Registrations", icon: "📅" },
   ];
 
@@ -120,8 +122,15 @@ export default function UserDashboard() {
   const fetchCourses = async () => {
     setCourseLoading(true);
     try {
-      const data = await courseApi.getCatalog(token, catalogFilters);
-      setCourses(data);
+      const [catalogData, enrolledData] = await Promise.allSettled([
+        courseApi.getCatalog(token, catalogFilters),
+        courseApi.getEnrolledCourses(token),
+      ]);
+      if (catalogData.status === "fulfilled") setCourses(catalogData.value);
+      if (enrolledData.status === "fulfilled") {
+        const ids = new Set(enrolledData.value.map((c) => c._id));
+        setEnrolledCourseIds(ids);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -689,74 +698,95 @@ export default function UserDashboard() {
                               <div className="w-16 h-16 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mx-auto mb-6" />
                               <p className="text-surface-400 uppercase font-black text-xs tracking-widest">Opening Curriculum Library...</p>
                            </div>
-                        ) : courses.length > 0 ? (
-                           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                              {courses.map(course => (
-                                 <div 
-                                    key={course._id}
-                                    className="p-6 bg-white rounded-[3rem] border border-surface-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group flex flex-col animate-in fade-in duration-500"
-                                    onClick={() => navigate(`/courses/${course._id}`)}
-                                 >
-                                    <div className="aspect-video rounded-[2rem] overflow-hidden mb-6 relative shadow-lg">
-                                       <img 
-                                          src={course.thumbnail || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800"} 
-                                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                                          alt="" 
-                                       />
-                                       <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">★ Premium</div>
-                                    </div>
-                                    <div className="flex flex-col flex-1">
-                                       <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest mb-2">{course.domain}</span>
-                                       <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter line-clamp-2 leading-none group-hover:text-primary-600 transition-colors mb-4">{course.title}</h3>
-                                       
-                                       <p className="text-xs text-surface-500 font-medium line-clamp-3 leading-relaxed mb-6">
-                                          {course.description}
-                                       </p>
-
-                                       <div className="mt-auto pt-6 border-t border-surface-50">
-                                          <div className="flex items-center justify-between mb-4 text-xs font-bold text-surface-500">
-                                             <div className="flex items-center gap-1">
-                                                <span>📚</span> {course.totalModules || 0} Modules
-                                             </div>
-                                             <div className="flex items-center gap-1">
-                                                <span>📝</span> {course.totalLessons || 0} Lessons
-                                             </div>
-                                          </div>
+                        ) : (() => {
+                            const unenrolledCourses = courses.filter(c => !enrolledCourseIds.has(c._id));
+                            return unenrolledCourses.length > 0 ? (
+                            <>
+                              <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-4">{unenrolledCourses.length} Courses Available</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                 {unenrolledCourses.map(course => (
+                                    <div 
+                                       key={course._id}
+                                       className="p-6 bg-white rounded-[3rem] border border-surface-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group flex flex-col animate-in fade-in duration-500"
+                                       onClick={() => navigate(`/courses/${course._id}`)}
+                                    >
+                                       <div className="aspect-video rounded-[2rem] overflow-hidden mb-6 relative shadow-lg">
+                                          <img 
+                                             src={course.thumbnail || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=800"} 
+                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                                             alt="" 
+                                          />
+                                          <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">★ Premium</div>
+                                       </div>
+                                       <div className="flex flex-col flex-1">
+                                          <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest mb-2">{course.domain}</span>
+                                          <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter line-clamp-2 leading-none group-hover:text-primary-600 transition-colors mb-4">{course.title}</h3>
                                           
-                                          <div className="flex justify-between items-center">
-                                             <div className="flex flex-col">
-                                                <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Instructor</span>
-                                                <span className="text-[10px] font-black text-surface-600">{course.instructor || "CHAMP Faculty"}</span>
-                                             </div>
-                                             <div className="flex flex-col text-right">
-                                                <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Enrolment Fee</span>
-                                                <span className="text-sm font-black text-primary-600">
-                                                   ₹{course.price?.toLocaleString()}
-                                                </span>
-                                             </div>
-                                          </div>
+                                          <p className="text-xs text-surface-500 font-medium line-clamp-3 leading-relaxed mb-6">
+                                             {course.description}
+                                          </p>
 
-                                          <button 
-                                             onClick={(e) => {
-                                                e.stopPropagation();
-                                                navigate(`/courses/${course._id}`);
-                                             }}
-                                             className="w-full mt-6 py-3.5 bg-surface-50 text-surface-700 group-hover:bg-surface-900 group-hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-center"
-                                          >
-                                             View Course
-                                          </button>
+                                          <div className="mt-auto pt-6 border-t border-surface-50">
+                                             <div className="flex items-center justify-between mb-4 text-xs font-bold text-surface-500">
+                                                <div className="flex items-center gap-1">
+                                                   <span>📚</span> {course.totalModules || 0} Modules
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                   <span>📝</span> {course.totalLessons || 0} Lessons
+                                                </div>
+                                             </div>
+                                             
+                                             <div className="flex justify-between items-center">
+                                                <div className="flex flex-col">
+                                                   <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Instructor</span>
+                                                   <span className="text-[10px] font-black text-surface-600">{course.instructor || "CHAMP Faculty"}</span>
+                                                </div>
+                                                <div className="flex flex-col text-right">
+                                                   <span className="text-[8px] font-black text-surface-300 uppercase tracking-widest mb-1">Enrolment Fee</span>
+                                                   <span className="text-sm font-black text-primary-600">
+                                                      ₹{course.price?.toLocaleString()}
+                                                   </span>
+                                                </div>
+                                             </div>
+
+                                             <button 
+                                                onClick={(e) => {
+                                                   e.stopPropagation();
+                                                   navigate(`/courses/${course._id}`);
+                                                }}
+                                                className="w-full mt-6 py-3.5 bg-surface-50 text-surface-700 group-hover:bg-surface-900 group-hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-center"
+                                             >
+                                                View Course
+                                             </button>
+                                          </div>
                                        </div>
                                     </div>
-                                 </div>
-                              ))}
-                           </div>
+                                 ))}
+                              </div>
+                            </>
                         ) : (
                            <div className="p-20 bg-surface-50 rounded-[4rem] border-2 border-dashed border-surface-200 text-center">
                               <span className="text-6xl mb-6 block">📚</span>
-                              <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">New learning tracks are being curated.</h3>
-                              <p className="text-surface-400 font-medium mt-2">Check back soon for specialized healthcare certification programs.</p>
+                              {enrolledCourseIds.size > 0 && courses.length > 0 ? (
+                                 <>
+                                   <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">You're enrolled in all available courses!</h3>
+                                   <p className="text-surface-400 font-medium mt-2">Head to My Courses to continue learning.</p>
+                                   <button
+                                     onClick={() => navigate("/my-courses")}
+                                     className="mt-8 px-8 py-3 bg-surface-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all"
+                                   >
+                                     Go to My Courses →
+                                   </button>
+                                 </>
+                               ) : (
+                                 <>
+                                   <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">New learning tracks are being curated.</h3>
+                                   <p className="text-surface-400 font-medium mt-2">Check back soon for specialized healthcare certification programs.</p>
+                                 </>
+                               )}
                            </div>
-                        )}
+                        );
+                        })()}
                      </div>
                  )}
 
@@ -847,11 +877,11 @@ export default function UserDashboard() {
                     </div>
                  )}
 
-                 {activeTab === "discussions" && (
-                    <div className="space-y-4">
-                       <p className="text-surface-400 font-medium italic">Join the co-creative community discussions to share and solve practical challenges.</p>
-                    </div>
-                 )}
+                  {activeTab === "discussions" && (
+                     <div>
+                        <CommunityDiscussions user={user} token={token} />
+                     </div>
+                  )}
 
                  {activeTab === "events" && (
                     <div className="space-y-8">
@@ -865,7 +895,7 @@ export default function UserDashboard() {
                              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
                           </div>
                        ) : events.length > 0 ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
                              {events.map(event => (
                                 <div key={event._id} className="bg-white rounded-[3rem] border border-surface-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group flex flex-col md:flex-row">
                                    <div className="w-full md:w-48 h-48 md:h-auto relative overflow-hidden">
@@ -883,14 +913,29 @@ export default function UserDashboard() {
                                    <div className="flex-1 p-8 flex flex-col justify-between">
                                       <div>
                                          <div className="flex justify-between items-start mb-2">
-                                            <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter leading-none">{event.title}</h3>
+                                            <div className="flex flex-col gap-1.5">
+                                               <span className={`w-fit px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
+                                                  (event.eventType || "offline") === "online" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                                               }`}>
+                                                  {(event.eventType || "offline") === "online" ? "ONLINE EVENT" : "OFFLINE EVENT"}
+                                               </span>
+                                               <h3 className="text-xl font-black text-surface-900 uppercase tracking-tighter leading-none">{event.title}</h3>
+                                            </div>
                                             <span className="text-[10px] font-black text-surface-300 uppercase italic whitespace-nowrap">{event.time}</span>
                                          </div>
                                          <p className="text-sm text-surface-500 line-clamp-2 mb-6 font-medium leading-relaxed">{event.description}</p>
                                          
                                          <div className="flex flex-wrap gap-4 mb-6">
                                             <div className="flex items-center gap-2 text-[10px] font-black text-surface-400 uppercase tracking-widest">
-                                               <span>📍</span> {event.location}
+                                               {(event.eventType || "offline") === "online" ? (
+                                                  <>
+                                                     <span>🔗</span> Join Link Available
+                                                  </>
+                                               ) : (
+                                                  <>
+                                                     <span>📍</span> {event.location}
+                                                  </>
+                                               )}
                                             </div>
                                             <div className="flex items-center gap-2 text-[10px] font-black text-surface-400 uppercase tracking-widest">
                                                <span>👥</span> {event.registrations?.length || 0} / {event.maxOccupants} Joined
@@ -903,17 +948,29 @@ export default function UserDashboard() {
                                             Ends: {new Date(event.registrationTimeline).toLocaleDateString()}
                                          </div>
                                          {checkActive(event.registrations) ? (
-                                            <button disabled className="px-6 py-2 bg-green-50 text-green-600 text-[10px] font-black uppercase rounded-full border border-green-100">
-                                               ✓ Registered
-                                            </button>
-                                         ) : (
-                                            <button 
-                                               onClick={() => handleRegisterEvent(event._id)}
-                                               className="px-6 py-2 bg-surface-900 text-white text-[10px] font-black uppercase rounded-full hover:bg-primary-600 transition-all shadow-lg"
-                                            >
-                                               Join Session
-                                            </button>
-                                         )}
+                                             <div className="flex items-center gap-3">
+                                                <span className="px-6 py-2 bg-green-50 text-green-600 text-[10px] font-black uppercase rounded-full border border-green-100">
+                                                   ✓ Registered
+                                                </span>
+                                                {(event.eventType || "offline") === "online" && (
+                                                   <a 
+                                                      href={event.location}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      className="px-6 py-2 bg-primary-600 text-white text-[10px] font-black uppercase rounded-full hover:bg-primary-700 transition-all shadow-lg text-center"
+                                                   >
+                                                      Join Event
+                                                   </a>
+                                                )}
+                                             </div>
+                                          ) : (
+                                             <button 
+                                                onClick={() => handleRegisterEvent(event._id)}
+                                                className="px-6 py-2 bg-surface-900 text-white text-[10px] font-black uppercase rounded-full hover:bg-primary-600 transition-all shadow-lg"
+                                             >
+                                                Register
+                                             </button>
+                                          )}
                                       </div>
                                    </div>
                                 </div>
@@ -922,8 +979,7 @@ export default function UserDashboard() {
                        ) : (
                           <div className="p-20 bg-surface-50 rounded-[4rem] border-2 border-dashed border-surface-200 text-center">
                              <span className="text-6xl mb-6 block">📅</span>
-                             <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">No Active Events Found</h3>
-                             <p className="text-surface-400 font-medium mt-2">Check back later for new institutional sessions and conferences.</p>
+                             <h3 className="text-xl font-black text-surface-400 uppercase tracking-widest">No platform events available.</h3>
                           </div>
                        )}
                     </div>

@@ -41,9 +41,33 @@ export default function CheckoutPage() {
     }
   }, [courseId, token]);
 
+  const [enrolling, setEnrolling] = useState(false);
+  const [enrollError, setEnrollError] = useState(null);
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    setEnrollError(null);
     setShowModal(true);
+  };
+
+  const handleConfirmEnrollment = async () => {
+    setEnrolling(true);
+    setEnrollError(null);
+    try {
+      await courseApi.enroll(courseId, token);
+      setShowModal(false);
+      navigate("/my-courses");
+    } catch (err) {
+      const msg = err.message || "Enrollment failed";
+      // If already enrolled, just redirect
+      if (msg.toLowerCase().includes("already")) {
+        setShowModal(false);
+        navigate("/my-courses");
+      } else {
+        setEnrollError(msg);
+        setEnrolling(false);
+      }
+    }
   };
 
   if (loading) {
@@ -248,8 +272,9 @@ export default function CheckoutPage() {
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => {
-                setShowModal(false);
-                navigate("/dashboard/user?tab=learning");
+                if (!enrolling) {
+                  setShowModal(false);
+                }
               }}
             />
 
@@ -261,38 +286,56 @@ export default function CheckoutPage() {
               className="relative z-10 max-w-md w-full p-12 bg-white rounded-[4rem] border border-surface-100 shadow-2xl text-center space-y-6"
             >
               <div className="w-16 h-16 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-3xl mx-auto shadow-md">
-                ✓
+                💳
               </div>
 
               <h2 className="text-2xl font-black text-surface-900 uppercase tracking-tighter">
-                Enrollment Simulated!
+                Confirm Enrollment
               </h2>
 
               <p className="text-sm text-surface-500 leading-relaxed font-semibold">
-                Payment integration coming next phase. Your transaction and enrollment have been successfully simulated for this build.
+                Complete your mock payment and get instant access to this course in your learning dashboard.
               </p>
 
               <div className="p-4 bg-surface-50 rounded-2xl border border-surface-100 text-left space-y-1">
                 <div className="text-[8px] font-black text-surface-300 uppercase tracking-widest">
-                  Purchased Program
+                  Enrolling In
                 </div>
                 <div className="text-xs font-black text-surface-900 uppercase tracking-tight line-clamp-1">
                   {course.title}
                 </div>
-                <div className="text-[10px] text-green-600 font-bold uppercase italic mt-1 flex items-center gap-1">
-                  <span>💳 Status:</span> Mock Payment Succeeded
+                <div className="text-[10px] text-primary-600 font-bold uppercase italic mt-1 flex items-center gap-1">
+                  <span>⭐</span> Paid Course · ₹{total.toLocaleString()}
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  navigate("/dashboard/user?tab=learning");
-                }}
-                className="w-full py-4 bg-surface-900 text-white hover:bg-green-600 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-md"
-              >
-                Go to My Dashboard
-              </button>
+              {enrollError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold">
+                  ⚠️ {enrollError}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleConfirmEnrollment}
+                  disabled={enrolling}
+                  className={`w-full py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-md ${
+                    enrolling
+                      ? "bg-surface-300 text-surface-500 cursor-not-allowed"
+                      : "bg-surface-900 text-white hover:bg-green-600"
+                  }`}
+                >
+                  {enrolling ? "Enrolling..." : "✓ Confirm & Enroll Now"}
+                </button>
+                {!enrolling && (
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="w-full py-3 bg-surface-50 text-surface-500 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-surface-200 hover:bg-surface-100 transition-all"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </motion.div>
           </div>
         )}

@@ -1,227 +1,122 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import "./about.css";
 
 export default function AboutPage() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   };
 
   return (
-    <div className="about-container">
-      {/* Hero */}
-      <section className="about-hero">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className="text-4xl md:text-6xl font-black mb-4 leading-tight text-white">ABOUT CHAMP 21</h1>
-            <p className="text-xl md:text-2xl text-accent-400 font-bold uppercase tracking-widest">
-              Certified Healthcare Administration and Management Professionals
-            </p>
-          </motion.div>
+    <div className="min-h-screen bg-surface-50 pt-20">
+      {/* Hero Section */}
+      <section className="relative py-20 px-4 md:px-8 bg-gradient-to-b from-primary-50/40 via-white to-surface-50/50">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary-200/10 rounded-full blur-[130px]" />
         </div>
-      </section>
 
-      {/* Our Story */}
-      <section className="about-section bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
           <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-100/60 border border-primary-200/50 text-primary-700 text-xs font-black uppercase tracking-wider"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+            Our Mission & Purpose
+          </motion.div>
+          
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-surface-900 leading-tight"
           >
-            <h2 className="text-3xl font-black text-surface-900 mb-8 pb-3 border-b-4 border-primary-500 inline-block">Our Story</h2>
-            <h3 className="text-2xl font-black text-surface-800 mb-8">Why CHAMP 21 Was Created</h3>
-            <div className="space-y-6 text-lg text-surface-600 leading-relaxed text-left">
-              <p>Healthcare in India has grown rapidly in the last two decades. Hospitals have expanded, technology has advanced, and patient awareness has increased. But one important aspect has not evolved at the same pace: <span className="text-surface-900 font-black italic">The way healthcare administration professionals are prepared.</span></p>
-              
-              <div className="story-accent">
-                "Many professionals face real situations—patient escalation, operational delays, audit pressures—and often have to learn through trial and error. CHAMP 21 was created to address this gap."
-              </div>
+            About CHAMP
+          </motion.h1>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-                {[
-                  "Learning based on real-world scenarios",
-                  "Prepared for current realities, not past models",
-                  "Knowledge built collectively"
-                ].map((item, i) => (
-                  <div key={i} className="p-6 bg-surface-50 rounded-2xl border border-surface-100 font-bold text-sm text-surface-800">
-                    {item}
-                  </div>
-                ))}
-              </div>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-surface-600 max-w-2xl mx-auto font-medium leading-relaxed"
+          >
+            Building the next generation of verified, competent healthcare management and administration professionals in India.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* Mission & Vision Split */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+          <div className="lg:col-span-6 space-y-6">
+            <span className="text-[10px] text-primary-600 font-black uppercase tracking-widest block">The Foundation</span>
+            <h2 className="text-3xl font-extrabold text-surface-900 tracking-tight">Our Mission & Core Purpose</h2>
+            <p className="text-sm text-surface-500 leading-relaxed font-medium">
+              We operate under a simple reality: Hospital workflows have entered the 21st century. The people managing clinical delivery must be verified, competent, and aligned to present day patient safety audit checks.
+            </p>
+            <div className="bg-surface-50 p-6 rounded-2xl border border-surface-150 font-medium text-xs text-surface-600 italic">
+              "We are bridging the gap between theoretical health administration textbooks and ground clinical realities."
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Vision & Mission */}
-      <section className="about-section bg-surface-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-              <div className="mission-card">
-                 <h2 className="text-3xl font-black text-primary-600 mb-6 uppercase tracking-tighter">Vision</h2>
-                 <p className="text-xl font-bold text-surface-700 leading-relaxed">
-                   To build a national network of healthcare administration and management professionals who are prepared, adaptable, and capable of handling the realities of the 21st century healthcare system.
-                 </p>
-              </div>
-              <div className="mission-card">
-                 <h2 className="text-3xl font-black text-primary-600 mb-6 uppercase tracking-tighter">Mission</h2>
-                 <ul className="space-y-4 text-surface-600 font-medium">
-                   {[
-                     "Move beyond outdated frameworks and approaches",
-                     "Develop practical decision-making ability",
-                     "Learn continuously through real-world exposure",
-                     "Contribute to a shared ecosystem of knowledge",
-                     "Strengthen healthcare systems through better management"
-                   ].map((text, i) => (
-                     <li key={i} className="flex gap-4">
-                       <span className="text-accent-500 font-black">→</span>
-                       {text}
-                     </li>
-                   ))}
-                 </ul>
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Philosophy */}
-      <section className="about-section bg-white text-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black text-surface-900 mb-12 uppercase">The CHAMP 21 Philosophy</h2>
-          <p className="text-lg text-surface-600 leading-relaxed font-medium italic mb-12">"Healthcare cannot be managed effectively today using approaches that were designed for a different time."</p>
-          <div className="flex flex-col md:flex-row gap-6 justify-center">
-             <div className="p-8 bg-surface-900 text-white rounded-[2rem] flex-1 font-black text-sm uppercase tracking-[0.2em] shadow-xl">Relevance over tradition</div>
-             <div className="p-8 bg-primary-600 text-white rounded-[2rem] flex-1 font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-primary-500/30">Participation over passive learning</div>
+          </div>
+          <div className="lg:col-span-6 grid grid-cols-1 gap-6">
+            <div className="p-8 rounded-[2rem] bg-surface-50 border border-surface-200">
+              <h4 className="text-sm font-black text-primary-600 uppercase tracking-wider mb-2">Our Vision</h4>
+              <p className="text-xs text-surface-500 leading-relaxed font-medium">
+                To establish CHAMP as the national institutional registry of competence in hospital operations, quality compliance, and billing lifecycle management.
+              </p>
+            </div>
+            <div className="p-8 rounded-[2rem] bg-surface-50 border border-surface-200">
+              <h4 className="text-sm font-black text-primary-600 uppercase tracking-wider mb-2">Platform Goals</h4>
+              <p className="text-xs text-surface-500 leading-relaxed font-medium">
+                Empower L2 & L3 practitioners to mentor peer networks, author practical case study templates, and reduce ER triage bottlenecks.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Moving Beyond */}
-      <section className="about-section bg-surface-50 shadow-inner">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="bg-white p-12 md:p-16 rounded-[4rem] border border-surface-200">
-             <h2 className="text-3xl font-black text-surface-900 mb-12 text-center underline decoration-primary-300 decoration-8 underline-offset-8">Moving Beyond 20th Century Thinking</h2>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-                <div className="space-y-6">
-                   <p className="text-surface-600">While traditional concepts provide a foundation, today’s healthcare presents new challenges:</p>
-                   <div className="grid grid-cols-1 gap-3">
-                     {[
-                       "Increased patient awareness & expectations",
-                       "Greater regulatory/accreditation requirements",
-                       "Rapid technology integration",
-                       "Focus on quality, cost, and efficiency"
-                     ].map((item, i) => (
-                       <div key={i} className="flex items-center gap-4 bg-surface-50 p-4 rounded-xl border border-surface-100">
-                         <div className="w-2 h-2 rounded-full bg-primary-600" />
-                         <span className="text-sm font-bold text-surface-800">{item}</span>
-                       </div>
-                     ))}
-                   </div>
-                </div>
-                <div className="space-y-6">
-                  <p className="font-black text-surface-900 uppercase tracking-widest text-xs opacity-50">Our Encouragement:</p>
-                  <ul className="space-y-4 text-surface-700 italic font-medium text-lg border-l-4 border-surface-900 pl-8">
-                    <li>Re-examine traditional approaches</li>
-                    <li>Adapt them to current realities</li>
-                    <li>Develop new ways of thinking</li>
-                  </ul>
-                  <p className="text-xs font-black text-surface-400 mt-8">"This is not about rejecting the past. It is about ensuring relevance in the present."</p>
-                </div>
-             </div>
-           </div>
+      {/* Story Timeline */}
+      <section className="py-20 bg-surface-50 border-t border-surface-200/50">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-extrabold text-surface-900 tracking-tight">Platform Roadmap</h2>
+          </div>
+
+          <div className="space-y-8 relative">
+            <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-surface-200" />
+            {[
+              { year: "2024", title: "Launch of L1 Foundation Tracks", desc: "Introduced foundational MCQ and proctored modules for hospital admin graduates." },
+              { year: "2025", title: "EMR & NABH 5th Edition Modules", desc: "Integrated digital clinical case proctor simulations in partnerships with major regional hubs." },
+              { year: "2026", title: "National Institutional Registry Launch", desc: "Cryptographically verifiable digital credential lookups deployed globally." }
+            ].map((step, i) => (
+              <div key={i} className="relative pl-12">
+                <div className="absolute left-2.5 top-1.5 w-3.5 h-3.5 rounded-full bg-primary-600 border-2 border-white" />
+                <span className="text-xs font-black text-primary-600 block mb-1">{step.year}</span>
+                <h4 className="text-base font-black text-surface-900 mb-1">{step.title}</h4>
+                <p className="text-xs text-surface-500 font-medium leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Co-Creative Model */}
-      <section className="about-section bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="text-center mb-16">
-             <h2 className="text-3xl font-black text-surface-900 mb-6">Co-Creative Learning Model</h2>
-             <p className="text-xl text-surface-500 max-w-2xl mx-auto font-medium italic">"Knowledge evolves continuously through participation."</p>
-           </div>
-           
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              {[
-                { actor: "Junior Professional", action: "Raise a real issue from the ground" },
-                { actor: "Department Manager", action: "Share how a similar situation was handled" },
-                { actor: "Senior Leader", action: "Add strategic perspective and direction" }
-              ].map((item, i) => (
-                <div key={i} className="p-10 bg-surface-50 rounded-[3rem] border border-surface-100">
-                   <div className="step-label">{item.actor}</div>
-                   <p className="font-bold text-surface-800 leading-relaxed">{item.action}</p>
-                </div>
-              ))}
-           </div>
-
-           <div className="mt-20 p-12 bg-surface-900 rounded-[4rem] text-white text-center">
-              <h4 className="text-2xl font-black mb-10 leading-snug">Learning becomes: Continuous, collaborative, and grounded in real practice.</h4>
-              <div className="flex flex-wrap justify-center gap-8">
-                {["Relevant", "Inclusive", "Open"].map((attr, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-accent-400" />
-                    <span className="font-black text-sm uppercase tracking-widest">{attr}</span>
-                  </div>
-                ))}
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Leadership & Network */}
-      <section className="about-section bg-surface-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-              <div className="bg-white p-12 rounded-[4rem] border border-surface-200 shadow-xl">
-                 <h3 className="text-2xl font-black text-surface-900 mb-8 border-b-2 border-primary-100 pb-4">Leadership & Core Team</h3>
-                 <p className="text-surface-600 mb-8 leading-relaxed font-medium">Guided by professionals who understand both the academic and operational sides of healthcare.</p>
-                 <div className="team-list">
-                    {["Hospital Admin", "Management Edu", "Quality & Safety", "Ops Development"].map((item, i) => (
-                      <span key={i} className="team-badge">{item}</span>
-                    ))}
-                 </div>
-                 <p className="mt-8 text-xs font-black text-surface-400 uppercase tracking-widest">Focusing on responsibility and direction</p>
-              </div>
-              <div className="bg-white p-12 rounded-[4rem] border border-surface-200 shadow-xl">
-                 <h3 className="text-2xl font-black text-surface-900 mb-8 border-b-2 border-primary-100 pb-4">Advisory Network</h3>
-                 <p className="text-surface-600 mb-8 leading-relaxed font-medium">Supported by an experienced network of administrators, industry experts, and academic leaders.</p>
-                 <div className="space-y-4">
-                    {[
-                      "Providing strategic guidance",
-                      "Validating certification direction",
-                      "Sharing emerging trends",
-                      "Strengthening industry connections"
-                    ].map((item, i) => (
-                      <div key={i} className="flex gap-3 text-sm font-bold text-surface-700">
-                        <span className="text-primary-600">✓</span>
-                        {item}
-                      </div>
-                    ))}
-                 </div>
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="about-section bg-white text-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-           <h2 className="text-4xl md:text-5xl font-black text-surface-900 mb-8 leading-tight uppercase tracking-tighter">Your Journey Begins with Clarity</h2>
-           <p className="text-xl text-surface-600 mb-16 leading-relaxed font-medium">Join CHAMP 21 and prepare for the 21st century healthcare environment.</p>
-           
-           <div className="bg-white p-16 rounded-[4rem] border border-surface-200 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary-600 opacity-5 rounded-bl-full" />
-              <div className="flex flex-col md:flex-row justify-center gap-6 relative z-10">
-                <Link to="/join" className="btn-primary px-10 py-5">Join CHAMP</Link>
-                <Link to="/certification" className="btn-outline-dark px-10 py-5">Explore Certification</Link>
-                <Link to="/join-community" className="btn-outline-dark px-10 py-5">Join the Community</Link>
-              </div>
-           </div>
+      {/* CTA Section */}
+      <section className="py-24 bg-white border-t border-surface-200/50 text-center px-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-surface-900 tracking-tight">Join a growing healthcare professional ecosystem</h2>
+          <p className="text-sm text-surface-500 font-medium max-w-lg mx-auto leading-relaxed">
+            Validate operations competence, join peer discussions, and access verified institutional lookup databases.
+          </p>
+          <div className="pt-4">
+            <Link to="/join" className="btn-primary font-bold px-10 py-5 bg-primary-600 text-white rounded-2xl shadow-xl shadow-primary-500/20">
+              Join CHAMP Today
+            </Link>
+          </div>
         </div>
       </section>
     </div>

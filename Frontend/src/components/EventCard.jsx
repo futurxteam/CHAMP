@@ -31,9 +31,16 @@ export default function EventCard({ event, onRegister, isRegistered }) {
               Free
             </span>
           )}
-          <span className="px-2.5 py-1 text-[11px] font-medium bg-white/90 backdrop-blur-sm text-surface-700 rounded-full">
-            {event.category}
+          <span className={`px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full shadow-lg text-white ${
+            (event.eventType || "offline") === "online" ? "bg-green-600" : "bg-blue-600"
+          }`}>
+            {(event.eventType || "offline") === "online" ? "Online" : "Offline"}
           </span>
+          {event.category && (
+            <span className="px-2.5 py-1 text-[11px] font-medium bg-white/90 backdrop-blur-sm text-surface-700 rounded-full">
+              {event.category}
+            </span>
+          )}
         </div>
 
         {/* Date Badge */}
@@ -71,7 +78,7 @@ export default function EventCard({ event, onRegister, isRegistered }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            {event.location}
+            {(event.eventType || "offline") === "online" ? "Join Link Available" : event.location}
           </div>
         </div>
 
@@ -87,9 +94,20 @@ export default function EventCard({ event, onRegister, isRegistered }) {
           </div>
           
           {isRegistered ? (
-            <span className="px-3 py-1.5 text-xs font-semibold text-accent-700 bg-accent-50 rounded-lg">
-              ✓ Registered
-            </span>
+            (event.eventType || "offline") === "online" ? (
+              <a
+                href={event.location}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors hover:shadow-md text-center"
+              >
+                Join Event
+              </a>
+            ) : (
+              <span className="px-3 py-1.5 text-xs font-semibold text-accent-700 bg-accent-50 rounded-lg">
+                ✓ Registered
+              </span>
+            )
           ) : (
             <button
               onClick={() => onRegister?.(event._id || event.id)}

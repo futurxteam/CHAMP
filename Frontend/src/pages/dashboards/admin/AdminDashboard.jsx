@@ -5,11 +5,12 @@ import useStore from "../../../store/useStore";
 import { adminApi, eventApi, courseApi, moduleApi, lessonApi } from "../../../api/api";
 import VideoPlayer from "../../../components/VideoPlayer";
 import AdminCertificationsPanel from "./AdminCertificationsPanel";
+import CommunityDiscussions from "../../../components/CommunityDiscussions";
 
 export default function AdminDashboard() {
    const { user, logout, token } = useStore();
    const [searchParams, setSearchParams] = useSearchParams();
-   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
+   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "community");
 
    useEffect(() => {
       setSearchParams({ tab: activeTab });
@@ -21,23 +22,23 @@ export default function AdminDashboard() {
    const [pendingContent, setPendingContent] = useState([]);
    const [contentFilter, setContentFilter] = useState("pending");
    const [expandedItem, setExpandedItem] = useState(null);
-    const [roleChanges, setRoleChanges] = useState({});
-    const [rejectionReasons, setRejectionReasons] = useState({});
-    const [showRejectInput, setShowRejectInput] = useState(null);
-    const [pendingCourses, setPendingCourses] = useState([]);
-    const [courseFilter, setCourseFilter] = useState("pending");
-    const [showCourseRejectInput, setShowCourseRejectInput] = useState(null);
-    const [courseRejectionReasons, setCourseRejectionReasons] = useState({});
-    const [inspectingCourse, setInspectingCourse] = useState(null);
-    const [inspectionData, setInspectionData] = useState({ modules: [], lessons: {} });
-    const [inspectingLoading, setInspectingLoading] = useState(false);
+   const [roleChanges, setRoleChanges] = useState({});
+   const [rejectionReasons, setRejectionReasons] = useState({});
+   const [showRejectInput, setShowRejectInput] = useState(null);
+   const [pendingCourses, setPendingCourses] = useState([]);
+   const [courseFilter, setCourseFilter] = useState("pending");
+   const [showCourseRejectInput, setShowCourseRejectInput] = useState(null);
+   const [courseRejectionReasons, setCourseRejectionReasons] = useState({});
+   const [inspectingCourse, setInspectingCourse] = useState(null);
+   const [inspectionData, setInspectionData] = useState({ modules: [], lessons: {} });
+   const [inspectingLoading, setInspectingLoading] = useState(false);
 
    // Event Management State
    const [events, setEvents] = useState([]);
    const [showEventForm, setShowEventForm] = useState(false);
    const [editingEvent, setEditingEvent] = useState(null);
    const [eventData, setEventData] = useState({
-      title: "", date: "", time: "10:00 AM", description: "", location: "", thumbnail: "", maxOccupants: 50, registrationTimeline: ""
+      title: "", date: "", time: "10:00 AM", description: "", location: "", thumbnail: "", maxOccupants: 50, registrationTimeline: "", eventType: "offline"
    });
    const [thumbnailFile, setThumbnailFile] = useState(null);
    const [uploading, setUploading] = useState(false);
@@ -61,7 +62,7 @@ export default function AdminDashboard() {
                formData.append(key, eventData[key]);
             }
          });
-         
+
          if (thumbnailFile) {
             formData.append("thumbnail", thumbnailFile);
          }
@@ -74,7 +75,7 @@ export default function AdminDashboard() {
          setShowEventForm(false);
          setEditingEvent(null);
          setThumbnailFile(null);
-         setEventData({ title: "", date: "", time: "10:00 AM", description: "", location: "", thumbnail: "", maxOccupants: 50, registrationTimeline: "" });
+         setEventData({ title: "", date: "", time: "10:00 AM", description: "", location: "", thumbnail: "", maxOccupants: 50, registrationTimeline: "", eventType: "offline" });
          fetchAdminEvents();
       } catch (err) { alert(err.message); }
       finally { setUploading(false); }
@@ -89,6 +90,7 @@ export default function AdminDashboard() {
    };
 
    const menuItems = [
+      { id: "community", label: "Community Discussions", icon: "💬" },
       { id: "overview", label: "System Overview", icon: "📊" },
       { id: "users", label: "Manage People", icon: "👥" },
       { id: "content", label: "Content Moderation", icon: "📄" },
@@ -285,22 +287,22 @@ export default function AdminDashboard() {
                      <div className="space-y-2 md:col-span-2">
                         <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Cover Picture (Thumbnail)</label>
                         <div className="relative group">
-                           <input 
-                              type="file" 
-                              accept="image/*" 
+                           <input
+                              type="file"
+                              accept="image/*"
                               onChange={(e) => setThumbnailFile(e.target.files[0])}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                            />
                            <div className={`w-full p-4 rounded-2xl border-2 border-dashed flex items-center gap-4 transition-all ${thumbnailFile ? 'border-primary-500 bg-primary-50' : 'border-surface-100 bg-surface-50 hover:border-primary-200'}`}>
                               <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-xl">
                                  {thumbnailFile ? '🖼️' : '📁'}
-                               </div>
-                               <div>
-                                  <p className="text-[10px] font-black text-surface-900 uppercase tracking-widest">
-                                     {thumbnailFile ? thumbnailFile.name : "Select cover image..."}
-                                  </p>
-                                  <p className="text-[8px] text-surface-400 font-bold uppercase tracking-widest">JPG, PNG or WEBP (Max 5MB)</p>
-                               </div>
+                              </div>
+                              <div>
+                                 <p className="text-[10px] font-black text-surface-900 uppercase tracking-widest">
+                                    {thumbnailFile ? thumbnailFile.name : "Select cover image..."}
+                                 </p>
+                                 <p className="text-[8px] text-surface-400 font-bold uppercase tracking-widest">JPG, PNG or WEBP (Max 5MB)</p>
+                              </div>
                            </div>
                         </div>
                      </div>
@@ -317,9 +319,30 @@ export default function AdminDashboard() {
                         <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Event Time</label>
                         <input required type="text" value={eventData.time} onChange={e => setEventData({ ...eventData, time: e.target.value })} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" placeholder="e.g. 10:00 AM" />
                      </div>
+                     <div className="space-y-2 md:col-span-2">
+                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Event Type *</label>
+                        <select
+                           required
+                           value={eventData.eventType || "offline"}
+                           onChange={e => setEventData({ ...eventData, eventType: e.target.value })}
+                           className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none"
+                        >
+                           <option value="offline">Offline Event</option>
+                           <option value="online">Online Event</option>
+                        </select>
+                     </div>
                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Location / Link</label>
-                        <input required type="text" value={eventData.location} onChange={e => setEventData({ ...eventData, location: e.target.value })} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none" />
+                        <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">
+                           {eventData.eventType === "online" ? "Meeting Link *" : "Venue Location *"}
+                        </label>
+                        <input
+                           required
+                           type="text"
+                           value={eventData.location}
+                           onChange={e => setEventData({ ...eventData, location: e.target.value })}
+                           className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none"
+                           placeholder={eventData.eventType === "online" ? "https://zoom.us/meeting-link" : "Enter event venue"}
+                        />
                      </div>
                      <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase text-surface-300 tracking-widest">Max Occupants</label>
@@ -334,14 +357,14 @@ export default function AdminDashboard() {
                         <textarea required value={eventData.description} onChange={e => setEventData({ ...eventData, description: e.target.value })} className="w-full px-5 py-3 rounded-2xl border border-surface-100 bg-surface-50 font-bold text-surface-900 outline-none h-24 resize-none" />
                      </div>
                      <div className="md:col-span-2 pt-4 flex gap-4">
-                        <button 
-                           type="submit" 
+                        <button
+                           type="submit"
                            disabled={uploading}
                            className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl transition-all ${uploading ? 'bg-surface-200 text-surface-400' : 'bg-surface-900 text-white hover:bg-primary-600'}`}
                         >
                            {uploading ? "Uploading & Syncing..." : editingEvent ? "Commit Changes" : "Publish Event"}
                         </button>
-                        <button 
+                        <button
                            type="button"
                            onClick={() => { setShowEventForm(false); setEditingEvent(null); setThumbnailFile(null); }}
                            className="px-10 py-4 border-2 border-surface-100 text-surface-400 rounded-2xl font-black uppercase tracking-widest hover:bg-surface-50 transition-all"
@@ -406,6 +429,12 @@ export default function AdminDashboard() {
             </header>
 
             <div className="dashboard-body">
+               {activeTab === "community" && (
+                  <div>
+                     <CommunityDiscussions user={user} token={token} />
+                  </div>
+               )}
+
                {activeTab === "overview" && (
                   <>
                      <div className="stats-grid grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
@@ -521,11 +550,10 @@ export default function AdminDashboard() {
                                           <select
                                              value={roleChanges[u._id] || u.role}
                                              onChange={(e) => handleRoleChangeSelect(u._id, e.target.value)}
-                                             className={`appearance-none px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all border-2 border-transparent focus:border-primary-200 outline-none pr-8 ${
-                                                (roleChanges[u._id] || u.role) === "L3" ? "bg-accent-50 text-accent-600 hover:bg-accent-100" :
-                                                (roleChanges[u._id] || u.role) === "L2" ? "bg-primary-50 text-primary-600 hover:bg-primary-100" :
-                                                "bg-surface-50 text-surface-500 hover:bg-surface-100"
-                                             }`}
+                                             className={`appearance-none px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all border-2 border-transparent focus:border-primary-200 outline-none pr-8 ${(roleChanges[u._id] || u.role) === "L3" ? "bg-accent-50 text-accent-600 hover:bg-accent-100" :
+                                                   (roleChanges[u._id] || u.role) === "L2" ? "bg-primary-50 text-primary-600 hover:bg-primary-100" :
+                                                      "bg-surface-50 text-surface-500 hover:bg-surface-100"
+                                                }`}
                                           >
                                              <option value="L1">L1 — Member</option>
                                              <option value="L2">L2 — Contributor</option>
@@ -597,9 +625,8 @@ export default function AdminDashboard() {
                            <button
                               key={s}
                               onClick={() => setContentFilter(s)}
-                              className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                 contentFilter === s ? "bg-surface-900 text-white shadow" : "text-surface-400 hover:text-surface-900"
-                              }`}
+                              className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${contentFilter === s ? "bg-surface-900 text-white shadow" : "text-surface-400 hover:text-surface-900"
+                                 }`}
                            >
                               {s === "all" ? "All Content" : s === "approved" ? "✓ Approved" : s === "rejected" ? "✕ Rejected" : "⏳ Pending"}
                            </button>
@@ -624,10 +651,9 @@ export default function AdminDashboard() {
                                        <span className="text-[9px] font-black text-surface-400 uppercase tracking-widest bg-surface-50 px-2 py-0.5 rounded">{item.type}</span>
                                     </div>
                                  </div>
-                                 <span className={`px-3 py-1 text-[10px] font-black uppercase rounded-full tracking-widest ${
-                                    item.status === "approved" ? "bg-green-50 text-green-600" :
-                                    item.status === "rejected" ? "bg-red-50 text-red-500" : "bg-amber-50 text-amber-600"
-                                 }`}>
+                                 <span className={`px-3 py-1 text-[10px] font-black uppercase rounded-full tracking-widest ${item.status === "approved" ? "bg-green-50 text-green-600" :
+                                       item.status === "rejected" ? "bg-red-50 text-red-500" : "bg-amber-50 text-amber-600"
+                                    }`}>
                                     {item.status === "approved" ? "✓ Published" : item.status === "rejected" ? "✕ Rejected" : "⏳ Pending Review"}
                                  </span>
                               </div>
@@ -725,7 +751,7 @@ export default function AdminDashboard() {
                   <div className="space-y-6">
                      {inspectingCourse ? (
                         <div className="animate-in fade-in slide-in-from-right-6 duration-500">
-                           <button 
+                           <button
                               onClick={() => setInspectingCourse(null)}
                               className="mb-8 px-6 py-2 bg-surface-50 text-surface-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-surface-900 hover:text-white transition-all shadow-sm"
                            >
@@ -783,7 +809,7 @@ export default function AdminDashboard() {
                                                             </div>
                                                          </div>
                                                          {lesson.videoUrl && (
-                                                            <button 
+                                                            <button
                                                                onClick={() => window.open(lesson.videoUrl, "_blank")}
                                                                className="px-4 py-2 bg-surface-50 text-[9px] font-black uppercase text-surface-400 rounded-lg hover:bg-primary-50 hover:text-primary-600"
                                                             >
@@ -808,9 +834,8 @@ export default function AdminDashboard() {
                                  <button
                                     key={s}
                                     onClick={() => setCourseFilter(s)}
-                                    className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                       courseFilter === s ? "bg-surface-900 text-white shadow" : "text-surface-400 hover:text-surface-900"
-                                    }`}
+                                    className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${courseFilter === s ? "bg-surface-900 text-white shadow" : "text-surface-400 hover:text-surface-900"
+                                       }`}
                                  >
                                     {s === "all" ? "All Courses" : s === "approved" ? "✓ Approved" : s === "rejected" ? "✕ Rejected" : "⏳ Pending"}
                                  </button>
@@ -840,10 +865,9 @@ export default function AdminDashboard() {
                                              </div>
                                           </div>
                                        </div>
-                                       <span className={`px-3 py-1 text-[10px] font-black uppercase rounded-full tracking-widest ${
-                                          item.status === "approved" ? "bg-green-50 text-green-600" :
-                                          item.status === "rejected" ? "bg-red-50 text-red-500" : "bg-amber-50 text-amber-600"
-                                       }`}>
+                                       <span className={`px-3 py-1 text-[10px] font-black uppercase rounded-full tracking-widest ${item.status === "approved" ? "bg-green-50 text-green-600" :
+                                             item.status === "rejected" ? "bg-red-50 text-red-500" : "bg-amber-50 text-amber-600"
+                                          }`}>
                                           {item.status}
                                        </span>
                                     </div>
@@ -885,8 +909,8 @@ export default function AdminDashboard() {
                                              <button onClick={() => setShowCourseRejectInput(item._id)} className="px-8 py-3 border-2 border-red-100 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all">
                                                 Reject with Feedback
                                              </button>
-                                             <button 
-                                                onClick={() => handleInspectCourse(item)} 
+                                             <button
+                                                onClick={() => handleInspectCourse(item)}
                                                 className="px-8 py-3 bg-surface-50 text-surface-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-surface-100 transition-all ml-auto"
                                              >
                                                 Inspect Curriculum 🔍
@@ -910,7 +934,7 @@ export default function AdminDashboard() {
                            <p className="text-[10px] font-black text-surface-300 uppercase tracking-widest mt-1">Total Platform Events</p>
                         </div>
                         <button
-                           onClick={() => { setEditingEvent(null); setEventData({ title: "", date: "", time: "10:00 AM", description: "", location: "", thumbnail: "", maxOccupants: 50, registrationTimeline: "" }); setShowEventForm(true); }}
+                           onClick={() => { setEditingEvent(null); setEventData({ title: "", date: "", time: "10:00 AM", description: "", location: "", thumbnail: "", maxOccupants: 50, registrationTimeline: "", eventType: "offline" }); setShowEventForm(true); }}
                            className="h-24 px-10 bg-surface-900 text-white rounded-3xl font-black uppercase tracking-widest text-xs hover:bg-primary-600 transition-all shadow-xl"
                         >
                            + New Event
@@ -929,9 +953,13 @@ export default function AdminDashboard() {
                                     </div>
                                     <div>
                                        <h4 className="text-xl font-black text-surface-900 uppercase tracking-tighter">{event.title}</h4>
-                                       <div className="flex gap-4 mt-1">
+                                       <div className="flex flex-wrap gap-4 mt-1">
+                                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${event.eventType === "online" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                                             }`}>
+                                             {event.eventType === "online" ? "ONLINE" : "OFFLINE"}
+                                          </span>
                                           <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest">{new Date(event.date).toLocaleDateString()} • {event.time}</span>
-                                          <span className="text-[10px] font-black text-surface-300 uppercase tracking-widest">{event.location}</span>
+                                          <span className="text-[10px] font-black text-surface-300 uppercase tracking-widest truncate max-w-[200px]">{event.location}</span>
                                        </div>
                                     </div>
                                  </div>
@@ -954,7 +982,8 @@ export default function AdminDashboard() {
                                                 location: event.location,
                                                 thumbnail: event.thumbnail,
                                                 maxOccupants: event.maxOccupants,
-                                                registrationTimeline: event.registrationTimeline ? new Date(event.registrationTimeline).toISOString().split('T')[0] : ""
+                                                registrationTimeline: event.registrationTimeline ? new Date(event.registrationTimeline).toISOString().split('T')[0] : "",
+                                                eventType: event.eventType || "offline"
                                              });
                                              setShowEventForm(true);
                                           }}
@@ -987,7 +1016,7 @@ export default function AdminDashboard() {
 
                {activeTab !== "overview" && activeTab !== "users" && activeTab !== "content" && activeTab !== "events" && activeTab !== "certifications" && (
                   <div className="p-20 bg-surface-50 rounded-[3rem] border border-dashed border-surface-200 text-center">
-                     <p className="text-surface-400 font-bold uppercase tracking-widest italic text-xs">Section under active development.</p>
+                     <p className="text-surface-400 font-bold uppercase tracking-widest italic text-xs"></p>
                   </div>
                )}
             </div>
